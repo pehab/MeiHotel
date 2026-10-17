@@ -32,6 +32,11 @@ jobs:
         run: bash .github/scripts/smoke-android.sh
       - uses: actions/upload-artifact@v6
         with:
+          name: MeiHotel-Screenshot
+          path: app/build/screenshots/hotel.png
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v6
+        with:
           name: MeiHotel-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error

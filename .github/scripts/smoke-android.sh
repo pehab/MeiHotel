@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
+export ANDROID_AVD_HOME="$RUNNER_TEMP/meihotel-avds"
+mkdir -p "$ANDROID_AVD_HOME"
 sdkmanager "emulator" "system-images;android-30;google_apis;x86_64"
-printf 'no\n' | avdmanager create avd --name hotel --package "system-images;android-30;google_apis;x86_64" --force
+printf 'no\n' | avdmanager create avd --name hotel --package "system-images;android-30;google_apis;x86_64" --force --path "$ANDROID_AVD_HOME/hotel.avd"
+emulator -list-avds | tee "$RUNNER_TEMP/avds.txt"
+rg -q '^hotel$' "$RUNNER_TEMP/avds.txt"
 sudo chmod 666 /dev/kvm
 emulator -avd hotel -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -camera-back none > "$RUNNER_TEMP/emulator.log" 2>&1 &
 emulator_pid=$!
