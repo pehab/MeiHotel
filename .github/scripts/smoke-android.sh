@@ -20,8 +20,15 @@ timeout 120 adb wait-for-device
 timeout 180 bash -c 'until [ "$(adb shell getprop sys.boot_completed | tr -d "\r")" = "1" ]; do sleep 2; done'
 adb shell wm size 1280x900
 adb shell input keyevent 82
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+# Install the lower-version fixture, seed progress, then update without uninstalling.
+adb install -r "$RUNNER_TEMP/MeiHotel-baseline.apk"
 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+for phase in seed verify; do
+  if [ "$phase" = verify ]; then adb install -r app/build/outputs/apk/debug/app-debug.apk; fi
+  adb shell am instrument -w -r -e upgradePhase "$phase" de.meiapps.meihotel.test/de.meiapps.meihotel.SmokeInstrumentation | tee "$RUNNER_TEMP/update-$phase.txt"
+  grep -q 'INSTRUMENTATION_CODE: -1' "$RUNNER_TEMP/update-$phase.txt"
+  ! grep -Eq 'FAIL:|INSTRUMENTATION_FAILED' "$RUNNER_TEMP/update-$phase.txt"
+done
 adb shell am instrument -w -r de.meiapps.meihotel.test/de.meiapps.meihotel.SmokeInstrumentation | tee "$RUNNER_TEMP/smoke-result.txt"
 # A custom instrumentation runner reports RESULT_OK as -1; am instrument itself always exits zero.
 grep -q 'INSTRUMENTATION_CODE: -1' "$RUNNER_TEMP/smoke-result.txt"

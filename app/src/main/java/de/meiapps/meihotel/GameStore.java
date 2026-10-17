@@ -23,15 +23,21 @@ final class GameStore {
             game.cleaned=bounded(data.getInt("cleaned"),0,Integer.MAX_VALUE);
             game.speedLevel=bounded(data.getInt("speed"),0,3);
             game.roomLevel=bounded(data.getInt("quality"),0,3);
+            game.cargo=bounded(data.optInt("cargo",0),0,2);
+            game.deliveries=bounded(data.optInt("deliveries",0),0,Integer.MAX_VALUE);
+            game.breakfastLevel=bounded(data.optInt("breakfast",0),0,3);
+            game.claimedGoals=bounded(data.optInt("goals",0),0,15);
             game.hasCleaner=data.getBoolean("cleaner");game.hasReception=data.getBoolean("reception");
             JSONArray rooms=data.getJSONArray("rooms");
             if(rooms.length()!=6)throw new JSONException("Invalid rooms");
             for(int i=0;i<6;i++) {
                 JSONObject saved=rooms.getJSONObject(i);
                 HotelGame.Room room=game.rooms[i];room.state=HotelGame.State.valueOf(saved.getString("state"));
+                room.request=bounded(saved.optInt("request",0),0,2);
+                if(room.state!=HotelGame.State.OCCUPIED)room.request=0;
                 room.timer=(float)saved.getDouble("timer");
                 if(!Float.isFinite(room.timer))throw new JSONException("Invalid timer");
-                room.timer=Math.max(0,Math.min(24,room.timer));
+                room.timer=Math.max(0,Math.min(40,room.timer));
                 if(i<2&&room.state==HotelGame.State.LOCKED)throw new JSONException("Starter room locked");
                 if(room.state==HotelGame.State.ARRIVING) {room.state=HotelGame.State.OCCUPIED;room.timer=20;}
                 if(room.state==HotelGame.State.OCCUPIED) {
@@ -51,12 +57,14 @@ final class GameStore {
         try {
             JSONObject data=new JSONObject();data.put("schema",1);data.put("coins",game.coins);
             data.put("served",game.served);data.put("cleaned",game.cleaned);
+            data.put("cargo",game.cargo);data.put("deliveries",game.deliveries);
+            data.put("breakfast",game.breakfastLevel);data.put("goals",game.claimedGoals);
             data.put("speed",game.speedLevel);data.put("quality",game.roomLevel);
             data.put("cleaner",game.hasCleaner);data.put("reception",game.hasReception);
             data.put("x",game.player.x);data.put("y",game.player.y);
             JSONArray rooms=new JSONArray();
             for(HotelGame.Room r:game.rooms) {
-                JSONObject entry=new JSONObject();entry.put("state",r.state.name());entry.put("timer",r.timer);rooms.put(entry);
+                JSONObject entry=new JSONObject();entry.put("state",r.state.name());entry.put("timer",r.timer);entry.put("request",r.request);rooms.put(entry);
             }
             data.put("rooms",rooms);
             SharedPreferences.Editor editor=preferences.edit().putString("save",data.toString());
