@@ -23,7 +23,12 @@ jobs:
       - name: Android SDK
         run: bash .github/scripts/setup-android.sh
       - name: Test, lint and APK
-        run: ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug assembleRelease
+        run: ./gradlew --no-daemon --warning-mode all testDebugUnitTest lintDebug assembleDebug assembleRelease assembleDebugAndroidTest
+      - name: Lint-Details bei Fehlern
+        if: failure()
+        run: cat app/build/reports/lint-results-debug.txt 2>/dev/null || true
+      - name: Android-Start und Spielstand prüfen
+        run: bash .github/scripts/smoke-android.sh
       - uses: actions/upload-artifact@v6
         with:
           name: MeiHotel-APK

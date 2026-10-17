@@ -56,6 +56,6 @@ Die CI-APK verwendet die normale Android-Debug-Signatur. Bei einem neuen GitHub-
 - `MainActivity.java`: Android-Lebenszyklus und sichere Bildschirmränder.
 - `HotelGameTest.java`: Gästezyklus, Baukosten, Helfer, Kollisionen, alle Türen, Upgradegrenzen und Pausenzeiten.
 
-CI führt Unit-Tests, strenges Android-Lint sowie Debug- und Release-Build aus. Erst nach erfolgreichem Build erscheint die APK im Preview-Release. Keine zusätzlichen Laufzeitbibliotheken und keine Netzwerkberechtigung.
+CI führt Unit-Tests, strenges Android-Lint sowie Debug- und Release-Build aus. Erst nach erfolgreichem Build erscheint die APK im Preview-Release. AndroidX Activity übernimmt die Android-Zurück-Geste; keine Werbe- oder Analyse-SDKs und keine Netzwerkberechtigung.
 
 Siehe [Datenschutz](PRIVACY.md) und [Testcheckliste](docs/TESTING.md).

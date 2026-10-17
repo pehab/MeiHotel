@@ -6,6 +6,8 @@
 
 Unit-Tests prüfen den kompletten Gästezyklus und Auszahlung, Reinigungen, alle sechs Zimmerwege in beide Richtungen, Wand- und Bettkollisionen, einmalige Baukosten, Unterbrechung des Bauens, unbeaufsichtigten Betrieb mit Helfern, begrenzte Warteschlange, Upgradegrenzen und das Begrenzen ungültiger/langer Frames.
 
+CI startet außerdem einen Android-11-Emulator. Ein eigener Instrumentation-Runner prüft echte Android-Speicherung, Wiederherstellen belegter/schmutziger Zimmer und anreisender Gäste, beschädigte Spielstände, Activity-Start, Touch auf die Einführung und die laufende Simulation.
+
 ## Auf echtem Android-Gerät
 
 Vor einer Store-Freigabe auf Smartphone und Tablet durchführen:
