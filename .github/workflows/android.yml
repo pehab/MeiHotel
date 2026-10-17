@@ -21,7 +21,7 @@ jobs:
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v5
       - name: Android SDK
-        run: sdkmanager "platforms;android-36" "build-tools;35.0.0"
+        run: bash .github/scripts/setup-android.sh
       - name: Test, lint and APK
         run: ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug assembleRelease
       - uses: actions/upload-artifact@v6
