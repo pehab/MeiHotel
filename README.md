@@ -10,6 +10,17 @@ Ein freundliches Hotelspiel für Android: selbst durchs Hotel laufen, Gäste beg
 
 Der Download wird nach dem ersten erfolgreichen Build verfügbar. Unter [Releases](https://github.com/pehab/MeiHotel/releases/tag/preview) liegt die aktuelle Testversion als normale APK-Datei – auch ohne Download eines Actions-ZIP. Android 8.0 oder neuer. Installation aus dieser Quelle muss auf dem Gerät erlaubt sein; bei Family Link gelten zusätzlich die Freigaben des Elternkontos.
 
+## Neu in 0.3.0
+
+- **Begehbarer Hotelhof:** Café, Spielecke, Blumengarten und Pool, jeweils in fünf sichtbaren Ausbaustufen. Neue Bereiche benötigen drei bis sechs offene Zimmer. Jeder Ausbau erhöht die Einnahmen pro Gast; vor Ort warten freiwillige Serviceaufgaben mit Extra-Münzen.
+- **Jedes Zimmer einzeln ausbauen:** fünf individuelle Stufen pro Zimmer, jeweils +6 M je Besuch zusätzlich zur allgemeinen Ausstattung.
+- **Team und Ausrüstung:** je vier Schulungen für Empfang/Reinigung, drei Servicewagen-Stufen (bis vier gleiche Waren je Abholung) und fünf Trinkgeldkassen-Stufen.
+- **Hotelsterne:** vom kleinen Ein-Sterne-Hotel bis zum Fünf-Sterne-Haus. Zimmerausbau, Hof und eigene Lieferungen zählen gemeinsam; neue Sterne erhöhen den Verdienst.
+- **Wiederholbare Aufträge:** Gäste, Zimmerservice und Hofservice haben jeweils eine eigene Auftragsreihe. Belohnung unter „Ziele“ abholen; neue Aufträge verlangen neuen Fortschritt und zahlen mehr.
+- **Längere Meilensteine:** bis 2.500 Gäste mit einmaligen Belohnungen. Insgesamt 81 kaufbare Verbesserungsstufen plus vier zusätzliche Zimmer.
+- Über „Hof“ / „Hotel“ die Bereiche wechseln. Helfer arbeiten im Hotel weiter, während du im Hof unterwegs bist. Zum Bedienen zwei Sekunden auf einem Servicekreis stehen; wartende Aufgaben sind auf drei begrenzt und verfallen ohne Strafe.
+- Vorhandene Spielstände aus 0.2.0 und die feste Preview-Signatur bleiben kompatibel. Diese Version lässt sich über 0.2.0 aktualisieren.
+
 ## Neu in 0.2.0
 
 - Detailliertere Zimmer mit Parkett, Vorhängen, Bildern, Teppichen und warmem Licht; Lobby-Lounge, Gartenblumen und lebendigere Figuren mit Gepäck.
@@ -31,7 +42,7 @@ Der Download wird nach dem ersten erfolgreichen Build verfügbar. Unter [Release
 - Einführung, Aufgabenhinweise, Pause, Info und Zurücksetzen mit Bestätigung.
 - Lokaler Spielstand: automatisch alle acht aktiven Sekunden und beim Verlassen. Inaktive Zeit läuft nicht weiter; keine Offline-Strafe oder Login-Pflicht.
 
-Dies ist eine **erste spielbare Testversion** mit einem Hotel. Weitere Hotels, Pool und Sound sind noch nicht enthalten. Die Darstellung nutzt eine eigene, flache Draufsicht mit direkt im Spiel gezeichneten Figuren und Möbeln.
+Dies ist eine **erste spielbare Testversion** mit einem Hotel. Weitere Hotels und Sound sind noch nicht enthalten. Der Pool ist Teil des Hotelhofs. Die Darstellung nutzt eine eigene, flache Draufsicht mit direkt im Spiel gezeichneten Figuren und Möbeln.
 
 ## Steuerung
 
@@ -63,6 +74,7 @@ Die CI nutzt dann bei jedem Preview-Build diesen festen privaten Schlüssel. APK
 ## Aufbau und Qualität
 
 - `HotelGame.java`: Android-unabhängige Simulation und Wirtschaft.
+- `HotelProgress.java`: individuelle Zimmer, Hofbereiche, Team, Hotelsterne und wiederholbare Aufträge.
 - `Navigation.java`: begehbare Bereiche, Türen, Bettkollisionen und Wegeplanung.
 - `HotelView.java`: Originalgrafik, Touch-Steuerung und Menüs.
 - `GameStore.java`: versionierter, atomarer Spielstand in privaten App-Einstellungen.

@@ -40,3 +40,11 @@ Physische Geräteprüfungen sind manuelle Freigabeschritte und werden nicht durc
 - Nach dem Putzen und bei vom Spieler vorher fertiggestellter Reinigung kehrt die Reinigungskraft zum Wagen zurück.
 - Mit beiden Helfern erscheinen Handtuchwünsche; nach Buffetkauf auch Frühstück. Lieferungen müssen selbst erledigt werden und erhöhen Münzen genau einmal; nicht erfüllte Wünsche blockieren nichts.
 - Alle fünf Shopzeilen, Hotelziele, Warenwechsel und Reset auf Handy/Tablet prüfen.
+
+
+## 0.3.0 Regressionen
+
+- 26 Simulationsfälle: alle früheren Tests plus individuelle Zimmer, Ausbaugrenzen, Anforderungen der Hofbereiche, Personaltraining, Mehrfachlieferung, Hofwege, entfernte Interaktionen, weiterlaufende Helfer, optionale Hofaufträge, Sterne und wiederholbare Aufträge.
+- Android prüft zusätzliche Speicherfelder, 0.2- und 0.1-Migration, APK-Update von Fixture-Code 2 auf 3, vier Shop-Tabs, individuellen Zimmer-/Hofkauf und Hin-/Rückweg zum Hof.
+- Die Update-Fixture benutzt aktuellen Code mit niedrigerem Versionscode. Alte Speicherformate werden separat durch Entfernen der später hinzugefügten optionalen Felder geprüft.
+- CI zeichnet eine Hofansicht für visuelle Kontrolle; nur synthetische Testdaten.
