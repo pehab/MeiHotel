@@ -3,10 +3,16 @@ set -euo pipefail
 sdkmanager "emulator" "system-images;android-30;google_apis;x86_64"
 printf 'no\n' | avdmanager create avd --name hotel --package "system-images;android-30;google_apis;x86_64" --force
 sudo chmod 666 /dev/kvm
-emulator -avd hotel -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -camera-back none > "$RUNNER_TEMP/emulator.log" 2>&1 &
+emulator -avd hotel -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -camera-back none > "$RUNNER_TEMP/emulator.log" 2>&1 &
 emulator_pid=$!
-trap 'kill "$emulator_pid" 2>/dev/null || true' EXIT
-adb wait-for-device
+cleanup() {
+  result_code=$?
+  if [ "$result_code" -ne 0 ]; then tail -80 "$RUNNER_TEMP/emulator.log"; fi
+  kill "$emulator_pid" 2>/dev/null || true
+  exit "$result_code"
+}
+trap cleanup EXIT
+timeout 120 adb wait-for-device
 timeout 180 bash -c 'until [ "$(adb shell getprop sys.boot_completed | tr -d "\r")" = "1" ]; do sleep 2; done'
 adb shell wm size 1280x900
 adb shell input keyevent 82

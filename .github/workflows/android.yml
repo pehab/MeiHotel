@@ -28,6 +28,7 @@ jobs:
         if: failure()
         run: cat app/build/reports/lint-results-debug.txt 2>/dev/null || true
       - name: Android-Start und Spielstand prüfen
+        timeout-minutes: 8
         run: bash .github/scripts/smoke-android.sh
       - uses: actions/upload-artifact@v6
         with:
