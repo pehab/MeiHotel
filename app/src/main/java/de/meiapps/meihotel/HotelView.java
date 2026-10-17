@@ -168,7 +168,7 @@ final class HotelView extends View {
                     for(int n=0;n<a.level;n++){circle(c,x+80+n*62,y+124,13,guestColors[n%5]);circle(c,x+80+n*62,y+124,7,0xff6cb4c6);}
                 }
                 for(int n=0;n<a.pending;n++) {
-                    float gx=a.x+63+n*31,gy=a.y;
+                    float gx=a.x+100+n*31,gy=a.y;
                     oval(c,gx-10,gy+1,gx+10,gy+9,0x33243731);box(c,gx-8,gy-18,16,22,5,guestColors[(i+n)%5]);circle(c,gx,gy-25,8,0xffedc19b);
                 }
                 station(c,a.x,a.y,30,a.pending>0?GREEN:MUTED,a.pending>0?"+"+(35+a.level*12+game.progress.tipLevel*3):"Pause",a.work/2,game.area==1&&Math.hypot(game.player.x-a.x,game.player.y-a.y)<38);
@@ -194,7 +194,7 @@ final class HotelView extends View {
                 HotelGame.Room room=game.rooms[i];int cost=game.progress.roomCost(i);float y=270+i*66;
                 box(c,310,y,660,59,10,0xffe8e8d7);
                 labelLeft(c,"Zimmer "+(i+1)+" · Stufe "+room.level+"/5",329,y+23,21,INK,true);
-                labelLeft(c,room.state==HotelGame.State.LOCKED?"Erst im Hotel am Baukreis öffnen":game.roomIncome(room)+" M pro Gast · nächster Ausbau +6 M",329,y+45,16,MUTED,false);
+                labelLeft(c,room.state==HotelGame.State.LOCKED?"Erst im Hotel am Baukreis öffnen":room.level>=5?game.roomIncome(room)+" M pro Gast · Suite fertig":game.roomIncome(room)+" M pro Gast · nächster Ausbau +6 M",329,y+45,16,MUTED,false);
                 button(c,798,y+7,151,48,cost<0?(room.state==HotelGame.State.LOCKED?"Zu":"Fertig"):cost+" M",cost>=0&&game.coins>=cost?GREEN:MUTED,true);
             }
         }else {
@@ -204,7 +204,7 @@ final class HotelView extends View {
             String[] teamInfo={"Schneller einchecken · "+game.progress.receptionTraining+"/4","Schneller laufen und putzen · "+game.progress.cleanerTraining+"/4",(1+game.progress.cartLevel)+" Waren pro Abholung · Stufe "+game.progress.cartLevel+"/3","Mehr M je Gast und Service · "+game.progress.tipLevel+"/5"};
             for(int i=0;i<(shopPage==0?5:4);i++) {
                 float y=275+i*84;int cost;String title,info;
-                if(shopPage==3){cost=game.progress.amenityCost(i);title=HotelProgress.AREA_NAMES[i]+" · "+game.progress.amenities[i].level+"/5";info=game.progress.amenityRequirement(i);if(info.isEmpty())info="+3 M je Gast pro Stufe · neuer Service im Hof";}
+                if(shopPage==3){cost=game.progress.amenityCost(i);title=HotelProgress.AREA_NAMES[i]+" · "+game.progress.amenities[i].level+"/5";info=game.progress.amenityRequirement(i);if(info.isEmpty())info=game.progress.amenities[i].level==0?"+3 M je Gast · neuer Service im Hof":"Nächste Stufe: +3 M je Gast, +12 M je Hofservice";}
                 else {cost=game.cost(shopUpgrade(i));title=shopPage==0?hotel[i]:team[i];info=shopPage==0?hotelInfo[i]:teamInfo[i];}
                 boolean ready=shopPage!=3||game.progress.amenityRequirement(i).isEmpty();
                 box(c,310,y,660,76,12,0xffe8e8d7);labelLeft(c,title,329,y+28,23,INK,true);labelLeft(c,info,329,y+56,16,MUTED,false);
@@ -264,8 +264,6 @@ final class HotelView extends View {
             return;
         }
         int accent=guestColors[(r.id+r.level)%guestColors.length];
-        if(r.level>0){box(c,r.x+8,r.y+7,254,5,2,GOLD);}
-        for(int n=0;n<r.level;n++)circle(c,r.x+177+n*13,r.y+91,3,GOLD);
         // Staggered parquet, wall trim and a soft rug give rooms depth.
         for(int row=0;row<8;row++)for(int col=0;col<5;col++) {
             float px=r.x+9+col*50,py=r.y+12+row*24;
@@ -299,6 +297,11 @@ final class HotelView extends View {
         if(game.roomLevel>0){box(c,r.x+184,r.y+62,21,22,4,GOLD);label(c,"★",r.x+194,r.y+79,17,INK,true);}
         if(game.roomLevel>1){box(c,r.x+179,r.y+113,53,35,7,0xffe4cda3);circle(c,r.x+205,r.y+129,9,accent);}
         if(game.roomLevel>2){label(c,"★★★",r.centerX(),r.y+61,18,0xffaa7b28,true);}
+        if(r.level>=1)line(c,r.x+30,r.y+172,r.x+108,r.y+172,GOLD,4);
+        if(r.level>=2){box(c,r.x+166,r.y+151,74,35,10,0xffdcb98e);line(c,r.x+175,r.y+166,r.x+231,r.y+166,CREAM,2);}
+        if(r.level>=3){box(c,r.x+171,r.y+47,34,39,4,0xffae855a);for(int n=0;n<4;n++)box(c,r.x+175+n*7,r.y+53,5,24,1,guestColors[n]);}
+        if(r.level>=4){ring(c,r.x+147,r.y+100,13,GOLD,3);box(c,r.x+7,r.y+7,256,4,2,GOLD);}
+        if(r.level>=5){box(c,r.x+100,r.y+46,70,23,6,GOLD);label(c,"SUITE",r.centerX(),r.y+63,14,INK,true);}
         String state;
         switch(r.state){
             case OCCUPIED: state="ZU GAST";break;
@@ -331,9 +334,9 @@ final class HotelView extends View {
         labelLeft(c,"DEIN KLEINES TRAUMHOTEL",52,84,11,0xffc1d8c7,true);
         circle(c,357,55,20,GOLD);label(c,"M",357,63,22,INK,true);
         labelLeft(c,String.valueOf(game.coins),389,67,32,CREAM,true);
-        labelLeft(c,game.openRooms()+" Zimmer · "+game.progress.stars+" Sterne",570,50,21,CREAM,true);
+        labelLeft(c,game.openRooms()+" Zimmer · "+game.progress.stars+(game.progress.stars==1?" Stern":" Sterne"),570,50,21,CREAM,true);
         labelLeft(c,game.served+" Gäste · "+game.deliveries+" Lieferungen",570,74,16,0xffc1d8c7,false);
-        button(c,813,32,85,48,"Ziele",0xff94713f,true);
+        button(c,813,32,85,48,game.progress.hasRewardReady()?"Ziele!":"Ziele",0xff94713f,true);
         button(c,910,32,90,48,game.area==0?"Hof":"Hotel",GREEN,true);
         button(c,1014,32,100,48,"Hilfe",0xff365b50,true);
         button(c,1126,32,111,48,"Pause",0xff365b50,true);
@@ -457,7 +460,7 @@ final class HotelView extends View {
             .setMessage("Alle Zimmer, Münzen und Verbesserungen werden zurückgesetzt.")
             .setNegativeButton("Hotel behalten",null).setPositiveButton("Neu anfangen",(dialog,which)->{
                 HotelGame fresh=new HotelGame();game.progress.reset();game.area=0;game.cargoCount=0;game.coins=fresh.coins;game.served=0;game.cleaned=0;
-                game.breakfastLevel=0;game.claimedGoals=0;game.cargo=0;game.deliveries=0;game.cleaner.route.clear();game.cleaner.x=270;game.cleaner.y=650;
+                game.breakfastLevel=0;game.claimedGoals=0;game.cargo=0;game.deliveries=0;game.resetStaff();
                 game.hasCleaner=false;game.hasReception=false;game.speedLevel=0;game.roomLevel=0;
                 game.guests.clear();game.player.route.clear();game.player.x=245;game.player.y=450;
                 game.spawnTimer=2;game.receptionWork=0;game.elapsed=0;

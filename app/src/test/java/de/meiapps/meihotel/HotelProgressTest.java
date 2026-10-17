@@ -77,7 +77,12 @@ public class HotelProgressTest {
         assertFalse(g.progress.claimContract(0));g.served+=18;assertTrue(g.progress.claimContract(0));assertEquals(before+225,g.coins);
     }
     @Test public void resetClearsAllExpansionProgress(){
-        HotelGame g=resort();g.progress.buyAmenity(0);g.progress.stars=3;g.progress.services=7;g.progress.contractTier[0]=2;g.progress.cartLevel=2;
-        g.progress.reset();assertEquals(1,g.progress.stars);assertEquals(0,g.progress.amenityLevels());assertEquals(0,g.progress.services);assertEquals(0,g.progress.contractTier[0]);assertEquals(0,g.progress.cartLevel);
+        HotelGame g=resort();g.rooms[0].level=4;g.progress.buyAmenity(0);g.progress.stars=3;g.progress.services=7;g.progress.contractTier[0]=2;g.progress.cartLevel=2;
+        g.progress.reset();assertEquals(0,g.progress.roomLevels());assertEquals(1,g.progress.stars);assertEquals(0,g.progress.amenityLevels());assertEquals(0,g.progress.services);assertEquals(0,g.progress.contractTier[0]);assertEquals(0,g.progress.cartLevel);
+    }
+    @Test public void staffResetCanResumeTheSameDirtyRoom(){
+        HotelGame g=new HotelGame();g.hasCleaner=true;g.spawnTimer=1000;g.player.x=70;g.player.y=220;
+        g.rooms[0].state=HotelGame.State.DIRTY;advance(g,1);g.resetStaff();advance(g,20);
+        assertEquals(1,g.cleaned);assertEquals(270,g.cleaner.x,.01);assertEquals(650,g.cleaner.y,.01);
     }
 }

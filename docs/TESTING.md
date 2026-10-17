@@ -44,7 +44,7 @@ Physische Geräteprüfungen sind manuelle Freigabeschritte und werden nicht durc
 
 ## 0.3.0 Regressionen
 
-- 25 Simulationsfälle: alle früheren Tests plus individuelle Zimmer, Ausbaugrenzen, Anforderungen der Hofbereiche, Personaltraining, Mehrfachlieferung, Hofwege, entfernte Interaktionen, weiterlaufende Helfer, optionale Hofaufträge, Sterne und wiederholbare Aufträge.
+- 26 Simulationsfälle: alle früheren Tests plus individuelle Zimmer, Ausbaugrenzen, Anforderungen der Hofbereiche, Personaltraining, Mehrfachlieferung, Hofwege, entfernte Interaktionen, weiterlaufende Helfer, optionale Hofaufträge, Sterne und wiederholbare Aufträge.
 - Android prüft zusätzliche Speicherfelder, 0.2- und 0.1-Migration, APK-Update von Fixture-Code 2 auf 3, vier Shop-Tabs, individuellen Zimmer-/Hofkauf und Hin-/Rückweg zum Hof.
 - Die Update-Fixture benutzt aktuellen Code mit niedrigerem Versionscode. Alte Speicherformate werden separat durch Entfernen der später hinzugefügten optionalen Felder geprüft.
 - CI zeichnet eine Hofansicht für visuelle Kontrolle; nur synthetische Testdaten.

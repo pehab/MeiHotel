@@ -75,6 +75,7 @@ public final class HotelGame {
     public int roomIncome(Room room){return roomIncome()+room.level*6;}
     public float receptionDuration(){return 1.3f/(1+progress.receptionTraining*.2f);}
     public float cleaningDuration(){return 2.5f/(1+progress.cleanerTraining*.2f);}
+    public void resetStaff(){cleanerRoom=-1;cleaner.route.clear();cleaner.x=270;cleaner.y=650;}
     public void switchArea(){
         player.route.clear();area=1-area;player.x=area==0?245:640;player.y=area==0?450:465;
         announce(area==0?"Zurück im Hotel":"Willkommen im Hotelhof! Bereiche unter Ausbauen freischalten.");
