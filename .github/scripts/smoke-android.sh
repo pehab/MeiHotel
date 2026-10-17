@@ -22,7 +22,7 @@ adb shell wm size 1280x900
 adb shell input keyevent 82
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-adb shell am instrument -w de.meiapps.meihotel.test/de.meiapps.meihotel.SmokeInstrumentation | tee "$RUNNER_TEMP/smoke-result.txt"
+adb shell am instrument -w -r de.meiapps.meihotel.test/de.meiapps.meihotel.SmokeInstrumentation | tee "$RUNNER_TEMP/smoke-result.txt"
 # A custom instrumentation runner reports RESULT_OK as -1; am instrument itself always exits zero.
 grep -q 'INSTRUMENTATION_CODE: -1' "$RUNNER_TEMP/smoke-result.txt"
 ! grep -Eq 'FAIL:|INSTRUMENTATION_FAILED' "$RUNNER_TEMP/smoke-result.txt"
