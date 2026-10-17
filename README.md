@@ -43,9 +43,9 @@ Projekt öffnen, SDK 36 und JDK 17 einrichten, dann:
 ./gradlew testDebugUnitTest lintDebug assembleDebug assembleRelease
 ```
 
-Windows: `gradlew.bat`. Die Test-APK liegt unter `app/build/outputs/apk/debug/app-debug.apk`. Der Release-Build wird bewusst **nicht** mit dem öffentlichen Testschlüssel signiert; für den Play Store in Android Studio einen eigenen Uploadschlüssel verwenden.
+Windows: `gradlew.bat`. Die Test-APK liegt unter `app/build/outputs/apk/debug/app-debug.apk`. Der Release-Build wird bewusst **nicht** mit einem Produktionsschlüssel signiert; für den Play Store in Android Studio einen eigenen Uploadschlüssel verwenden.
 
-`app/signing/preview.p12` ist ein **absichtlich öffentlicher Testschlüssel** mit Passwort `android`. Er hält die Signatur der direkten Test-Downloads stabil, damit Updates den Spielstand behalten. Er ist kein Geheimnis und darf niemals für eine produktive Veröffentlichung oder andere Apps verwendet werden. Die Test-APK nur aus diesem Repository beziehen.
+Die CI-APK verwendet die normale Android-Debug-Signatur. Bei einem neuen GitHub-Runner kann sich diese ändern: Android verlangt dann eine Deinstallation vor der Neuinstallation, wobei der Spielstand verloren geht. Für regelmäßige Updates mit erhaltenem Fortschritt lokal in Android Studio mit demselben Schlüssel bauen. Ein privater Produktionsschlüssel gehört niemals ins Repository.
 
 ## Aufbau und Qualität
 

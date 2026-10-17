@@ -1,0 +1,52 @@
+name: Android
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v5
+      - name: Android SDK
+        run: sdkmanager "platforms;android-36" "build-tools;35.0.0"
+      - name: Test, lint and APK
+        run: ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug assembleRelease
+      - uses: actions/upload-artifact@v6
+        with:
+          name: MeiHotel-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: MeiHotel-APK
+      - name: Installierbare Test-APK veröffentlichen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          mv app-debug.apk MeiHotel.apk
+          if gh release view preview >/dev/null 2>&1; then
+            gh release upload preview MeiHotel.apk --clobber
+          else
+            gh release create preview MeiHotel.apk --target "${{ github.sha }}" --prerelease --title "MeiHotel – aktuelle Testversion" --notes "Werbefreie Offline-Testversion. APK unter Assets herunterladen. Benötigt Android 8 oder neuer."
+          fi
