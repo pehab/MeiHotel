@@ -158,7 +158,7 @@ final class HotelView extends View {
         line(c,r.x+9,r.y+50,r.x+261,r.y+50,0xffc9b48d,3);
         oval(c,r.x+139,r.y+113,r.x+240,r.y+187,0x1b6b8c79);
         // Window, bed, bedside table and seating are all original vector shapes.
-        paint.setShader(glassLight);rect.set(r.x+90,r.y+15,r.x+180,r.y+43);c.drawRoundRect(rect,5,5,paint);paint.setShader(null);
+        c.save();c.translate(r.x+90,r.y+15);paint.setShader(glassLight);rect.set(0,0,90,28);c.drawRoundRect(rect,5,5,paint);paint.setShader(null);c.restore();
         line(c,r.x+96,r.y+35,r.x+120,r.y+20,0x88ffffff,3);
         box(c,r.x+78,r.y+12,14,38,4,accent);box(c,r.x+179,r.y+12,14,38,4,accent);
         line(c,r.x+76,r.y+11,r.x+196,r.y+11,0xffa37c58,3);

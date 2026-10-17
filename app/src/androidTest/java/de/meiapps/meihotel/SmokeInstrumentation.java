@@ -74,11 +74,29 @@ public final class SmokeInstrumentation extends Instrumentation {
             });
             SystemClock.sleep(1400);
             runOnMainSync(()->check(view[0].game.elapsed>0,"welcome button starts simulation"));
-            result.putString("stream","\nPASS: Android save/load, corrupt save recovery, Activity launch, touch start and frame loop.\n");
+            runOnMainSync(()->{
+                view[0].game.coins=1000;
+                tap(view[0],1090,847); // Open shop, then exercise the new fifth row.
+                tap(view[0],870,620);
+                check(view[0].game.breakfastLevel==1&&view[0].game.coins==900,"breakfast shop row touch target");
+                tap(view[0],640,727);
+                tap(view[0],900,55); // Hotel goals and return.
+                tap(view[0],640,727);
+            });
+            result.putString("stream","\nPASS: Android save/load, legacy migration, corrupt save recovery, Activity launch, touch start, shop and hotel goals.\n");
             finish(Activity.RESULT_OK,result);
         } catch(Throwable failure) {
             result.putString("stream","\nFAIL: "+failure+"\n");
             result.putString("shortMsg",failure.toString());finish(Activity.RESULT_CANCELED,result);
         }
+    }
+    private static void tap(HotelView view,float logicalX,float logicalY) {
+        float scale=Math.min(view.getWidth()/1280f,view.getHeight()/900f);
+        float x=(view.getWidth()-1280*scale)/2+logicalX*scale;
+        float y=(view.getHeight()-900*scale)/2+logicalY*scale;
+        long time=SystemClock.uptimeMillis();
+        MotionEvent down=MotionEvent.obtain(time,time,MotionEvent.ACTION_DOWN,x,y,0);
+        MotionEvent up=MotionEvent.obtain(time,time+50,MotionEvent.ACTION_UP,x,y,0);
+        view.onTouchEvent(down);view.onTouchEvent(up);down.recycle();up.recycle();
     }
 }
