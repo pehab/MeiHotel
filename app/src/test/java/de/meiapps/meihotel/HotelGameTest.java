@@ -61,4 +61,50 @@ public class HotelGameTest {
         HotelGame g=new HotelGame();g.player.x=70;g.player.y=200;advance(g,200);
         assertEquals(4,g.waitingGuests());assertEquals(0,g.served);
     }
+    @Test public void cleanerReturnsToLobbyAfterLastRoomAndCanBeInterrupted() {
+        HotelGame g=new HotelGame();g.hasCleaner=true;g.spawnTimer=1000;
+        g.player.x=70;g.player.y=220;g.rooms[0].state=HotelGame.State.DIRTY;
+        advance(g,18);
+        assertEquals(HotelGame.State.READY,g.rooms[0].state);
+        assertEquals(270,g.cleaner.x,.01);assertEquals(650,g.cleaner.y,.01);
+        g.rooms[1].state=HotelGame.State.DIRTY;advance(g,8);
+        g.rooms[0].state=HotelGame.State.DIRTY;advance(g,30);
+        assertEquals(3,g.cleaned);assertEquals(270,g.cleaner.x,.01);assertEquals(650,g.cleaner.y,.01);
+    }
+    @Test public void playerCanFinishRoomBeforeCleanerArrives() {
+        HotelGame g=new HotelGame();g.hasCleaner=true;g.spawnTimer=1000;
+        g.rooms[0].state=HotelGame.State.DIRTY;g.player.x=505;g.player.y=315;
+        advance(g,15);
+        assertEquals(1,g.cleaned);assertEquals(270,g.cleaner.x,.01);assertEquals(650,g.cleaner.y,.01);
+    }
+    @Test public void breakfastHasThreePaidStagesAndIncreasesIncome() {
+        HotelGame g=new HotelGame();g.coins=1000;
+        for(int i=1;i<=3;i++) { assertTrue(g.buy(HotelGame.Upgrade.BREAKFAST));assertEquals(25+i*8,g.roomIncome()); }
+        assertEquals(250,g.coins);assertFalse(g.buy(HotelGame.Upgrade.BREAKFAST));
+    }
+    @Test public void hotelGoalsRewardExactlyOnceAndRespectCoinCap() {
+        HotelGame g=new HotelGame();g.served=25;g.tick(.025f);
+        assertEquals(210,g.coins);assertEquals(3,g.claimedGoals);
+        advance(g,3);assertEquals(210,g.coins);
+        g.served=100;g.coins=HotelGame.MAX_COINS-1;g.tick(.025f);
+        assertEquals(HotelGame.MAX_COINS,g.coins);assertEquals(15,g.claimedGoals);
+    }
+    @Test public void managerDeliversTowelsAndBreakfastButHelpersDoNot() {
+        HotelGame g=new HotelGame();g.hasCleaner=true;g.hasReception=true;g.breakfastLevel=1;
+        g.spawnTimer=1000;g.rooms[0].state=HotelGame.State.OCCUPIED;g.rooms[0].timer=30;g.rooms[0].request=1;
+        g.player.x=245;g.player.y=570;g.tick(.025f);assertEquals(1,g.cargo);
+        g.player.x=505;g.player.y=315;g.tick(.025f);
+        assertEquals(78,g.coins);assertEquals(1,g.deliveries);assertEquals(0,g.cargo);assertEquals(0,g.rooms[0].request);
+        g.rooms[0].request=2;g.player.x=92;g.player.y=650;g.tick(.025f);assertEquals(2,g.cargo);
+        g.player.x=505;g.player.y=315;g.tick(.025f);
+        assertEquals(104,g.coins);assertEquals(2,g.deliveries);assertEquals(0,g.cargo);
+        g.rooms[0].request=1;g.player.x=70;g.player.y=220;advance(g,2);
+        assertEquals(1,g.rooms[0].request);assertEquals(2,g.deliveries);
+    }
+    @Test public void unmetWishExpiresWithoutPenaltyOrBlockedRoom() {
+        HotelGame g=new HotelGame();g.spawnTimer=1000;g.player.x=70;g.player.y=220;
+        g.rooms[0].state=HotelGame.State.OCCUPIED;g.rooms[0].timer=.1f;g.rooms[0].request=1;
+        advance(g,1);assertEquals(HotelGame.State.DIRTY,g.rooms[0].state);
+        assertEquals(0,g.rooms[0].request);assertEquals(60,g.coins);
+    }
 }

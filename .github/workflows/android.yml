@@ -20,10 +20,20 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v5
+      - name: Restore private preview signing identity
+        env:
+          MEIHOTEL_SIGNING_JSON: ${{ secrets.MEIHOTEL_SIGNING_JSON }}
+        run: python3 .github/scripts/setup-signing.py
       - name: Android SDK
         run: bash .github/scripts/setup-android.sh
       - name: Test, lint and APK
         run: ./gradlew --no-daemon --warning-mode all testDebugUnitTest lintDebug assembleDebug assembleRelease assembleDebugAndroidTest
+      - name: Build older-version update fixture with the same preview identity
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/MeiHotel-current.apk"
+          ./gradlew --no-daemon assembleDebug -PmeihotelVersionCode=1
+          cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/MeiHotel-baseline.apk"
+          cp "$RUNNER_TEMP/MeiHotel-current.apk" app/build/outputs/apk/debug/app-debug.apk
       - name: Lint-Details bei Fehlern
         if: failure()
         run: cat app/build/reports/lint-results-debug.txt 2>/dev/null || true

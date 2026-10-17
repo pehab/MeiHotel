@@ -31,3 +31,12 @@ Vor einer Store-Freigabe auf Smartphone und Tablet durchführen:
 - [ ] Auf großem Tablet und bei von Android erzwungenem Hochformat bleibt die gesamte Spieloberfläche erreichbar.
 
 Physische Geräteprüfungen sind manuelle Freigabeschritte und werden nicht durch Unit-Tests ersetzt.
+
+
+## 0.2.0 Regressionen
+
+- CI installiert eine APK mit Versionscode 1 und dem innerhalb des Laufs identischen Testschlüssel, speichert Fortschritt und ersetzt sie per `adb install -r` durch Code 2. Die Instrumentation prüft Münzen, Helfer, Ziele und Buffet nach dem Update. Die ältere Fixture nutzt aktuellen Code; sie prüft den Android-Updatepfad, nicht die verloren gegangene Signatur der ursprünglichen 0.1-APK.
+- Instrumentation lädt zusätzlich einen Speicherstand ohne neue optionale Felder (0.1-Kompatibilität).
+- Nach dem Putzen und bei vom Spieler vorher fertiggestellter Reinigung kehrt die Reinigungskraft zum Wagen zurück.
+- Mit beiden Helfern erscheinen Handtuchwünsche; nach Buffetkauf auch Frühstück. Lieferungen müssen selbst erledigt werden und erhöhen Münzen genau einmal; nicht erfüllte Wünsche blockieren nichts.
+- Alle fünf Shopzeilen, Hotelziele, Warenwechsel und Reset auf Handy/Tablet prüfen.

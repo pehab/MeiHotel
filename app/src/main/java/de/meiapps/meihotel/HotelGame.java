@@ -9,7 +9,7 @@ public final class HotelGame {
     public static final float WIDTH = 1280, HEIGHT = 900;
     public static final int MAX_COINS = 999_999;
     public enum State { LOCKED, READY, ARRIVING, OCCUPIED, DIRTY }
-    public enum Upgrade { RECEPTION, CLEANER, SPEED, ROOMS }
+    public enum Upgrade { RECEPTION, CLEANER, SPEED, ROOMS, BREAKFAST }
     public static final class Point {
         public float x, y;
         public Point(float x, float y) { this.x = x; this.y = y; }
@@ -19,6 +19,7 @@ public final class HotelGame {
         public final float x, y;
         public State state;
         public float timer, work;
+        public int request; // 0: none, 1: towels, 2: breakfast
         Room(int id) {
             this.id = id; x = 320 + (id % 3) * 290; y = id < 3 ? 146 : 520;
             state = id < 2 ? State.READY : State.LOCKED;
@@ -54,7 +55,9 @@ public final class HotelGame {
     public final Actor cleaner = new Actor(270,650,0);
     public final Actor receptionist = new Actor(105,400,0);
     public final List<Actor> guests = new ArrayList<>();
-    public int coins=60, served, cleaned, speedLevel, roomLevel;
+    public int coins=60, served, cleaned, speedLevel, roomLevel, breakfastLevel, claimedGoals, cargo, deliveries;
+    public static final int[] GOAL_GUESTS={10,25,50,100};
+    public static final int[] GOAL_REWARDS={50,100,180,300};
     public boolean hasReception, hasCleaner;
     public float receptionWork, spawnTimer=2, elapsed;
     public String message = "Willkommen! Geh zur Rezeption.";
@@ -65,13 +68,14 @@ public final class HotelGame {
     public HotelGame() { for (int i=0;i<rooms.length;i++) rooms[i]=new Room(i); }
     public int openRooms() { int n=0; for (Room r:rooms) if(r.state!=State.LOCKED) n++; return n; }
     public int waitingGuests() { int n=0; for(Actor a:guests) if(a.room<0&&!a.leaving)n++;return n; }
-    public int roomIncome() { return 25 + roomLevel*10; }
+    public int roomIncome() { return 25 + roomLevel*10 + breakfastLevel*8; }
     public int cost(Upgrade u) {
         switch(u) {
             case RECEPTION: return hasReception ? -1 : 150;
             case CLEANER: return hasCleaner ? -1 : 180;
             case SPEED: return speedLevel>=3 ? -1 : 80 + speedLevel*100;
             case ROOMS: return roomLevel>=3 ? -1 : 120 + roomLevel*160;
+            case BREAKFAST: return breakfastLevel>=3 ? -1 : 100 + breakfastLevel*150;
             default: throw new IllegalArgumentException();
         }
     }
@@ -84,6 +88,7 @@ public final class HotelGame {
             case CLEANER: hasCleaner=true; break;
             case SPEED: speedLevel++; break;
             case ROOMS: roomLevel++; break;
+            case BREAKFAST: breakfastLevel++; break;
         }
         announce("Verbesserung freigeschaltet!"); return true;
     }
@@ -136,11 +141,14 @@ public final class HotelGame {
             if(r.state==State.ARRIVING) {
                 for(Actor a:guests)if(a.room==r.id&&!a.leaving&&a.route.isEmpty()) {
                     r.state=State.OCCUPIED;r.timer=16+random.nextFloat()*8;
+                    if(hasCleaner&&hasReception) {
+                        r.timer+=16;r.request=breakfastLevel>0&&random.nextBoolean()?2:1;
+                    }
                 }
             } else if(r.state==State.OCCUPIED) {
                 r.timer-=dt;
                 if(r.timer<=0) {
-                    r.state=State.DIRTY;
+                    r.state=State.DIRTY;r.request=0;
                     for(Actor a:guests)if(a.room==r.id&&!a.leaving){a.leaving=true;a.go(70,730,this);}
                 }
             }
@@ -150,19 +158,39 @@ public final class HotelGame {
                     if(r.work>=1.5f){coins-=r.price();r.state=State.READY;r.work=0;announce("Ein neues Zimmer! Willkommen in Zimmer "+(r.id+1));}
                 } else r.work=0;
             } else if(r.state==State.DIRTY) {
-                boolean helper=hasCleaner&&cleanerRoom==r.id&&cleaner.route.isEmpty();
+                boolean helper=hasCleaner&&cleanerRoom==r.id&&cleaner.route.isEmpty()&&Math.hypot(cleaner.x-(r.x+185),cleaner.y-r.serviceY())<3;
                 if(near(r.x+185,r.serviceY(),48)||helper) {
                     r.work+=dt;
                     if(r.work>=2.5f){r.state=State.READY;r.work=0;cleaned++;if(cleaned==1)announce("Blitzblank! Das Zimmer ist wieder frei.");}
                 } else r.work=0;
             }
         }
+        // Optional manager work: helpers never collect or deliver guest wishes.
+        if(hasCleaner&&hasReception) {
+            if(cargo==0) {
+                if(near(245,570,30))cargo=1;
+                else if(breakfastLevel>0&&near(92,650,32))cargo=2;
+            }
+            for(Room r:rooms)if(r.state==State.OCCUPIED&&r.request!=0&&r.request==cargo&&near(r.x+185,r.serviceY(),42)) {
+                int tip=r.request==1?18:22+breakfastLevel*4;
+                cargo=0;r.request=0;deliveries++;coins=Math.min(MAX_COINS,coins+tip);
+                announce("Danke! Zimmerservice geliefert · +"+tip+" Münzen");break;
+            }
+        }
         if(hasCleaner) {
             if(cleanerRoom<0||rooms[cleanerRoom].state!=State.DIRTY) {
-                cleanerRoom=-1;cleaner.route.clear();
+                boolean finishedTask=cleanerRoom>=0;
+                cleanerRoom=-1;
                 for(Room r:rooms)if(r.state==State.DIRTY){cleanerRoom=r.id;cleaner.go(r.x+185,r.serviceY(),this);break;}
+                // Keep the return route across frames; a new dirty room can interrupt it.
+                if(cleanerRoom<0&&(finishedTask||cleaner.route.isEmpty())&&Math.hypot(cleaner.x-270,cleaner.y-650)>2)
+                    cleaner.go(270,650,this);
             }
             cleaner.move(dt,140);
+        }
+        for(int i=0;i<GOAL_GUESTS.length;i++)if(served>=GOAL_GUESTS[i]&&(claimedGoals&(1<<i))==0) {
+            claimedGoals|=1<<i;coins=Math.min(MAX_COINS,coins+GOAL_REWARDS[i]);
+            announce("Hotelziel: "+GOAL_GUESTS[i]+" Gäste! +"+GOAL_REWARDS[i]+" Münzen");
         }
     }
     public String objective() {
@@ -171,8 +199,11 @@ public final class HotelGame {
         if(openRooms()<3)return "Spare 100 Münzen · öffne Zimmer 3 am Baukreis";
         if(!hasCleaner)return "Unter „Ausbauen“ eine Reinigungskraft einstellen";
         if(!hasReception)return "Empfangshilfe einstellen · mehr Zeit zum Erkunden";
+        if(cargo>0)return (cargo==1?"Handtücher":"Frühstück")+" dabei · zum passenden Gästewunsch im Zimmer laufen";
+        for(Room r:rooms)if(r.request!=0)return r.request==1?"Zimmerservice: Handtücher bei der Wäscheecke holen":"Zimmerservice: Frühstück am Buffet abholen";
         if(openRooms()<6)return "Dein Hotel wächst · schalte alle 6 Zimmer frei";
+        if(breakfastLevel==0)return "Eröffne dein Frühstücksbuffet unter „Ausbauen“";
         if(roomLevel<3)return "Verschönere die Zimmer · mehr Münzen pro Gast";
-        return "Dein Traumhotel! Wie viele Gäste begrüßt du heute?";
+        return "Dein Traumhotel! Erfülle Gästewünsche für extra Münzen.";
     }
 }

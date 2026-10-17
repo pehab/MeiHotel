@@ -10,7 +10,16 @@ Ein freundliches Hotelspiel für Android: selbst durchs Hotel laufen, Gäste beg
 
 Der Download wird nach dem ersten erfolgreichen Build verfügbar. Unter [Releases](https://github.com/pehab/MeiHotel/releases/tag/preview) liegt die aktuelle Testversion als normale APK-Datei – auch ohne Download eines Actions-ZIP. Android 8.0 oder neuer. Installation aus dieser Quelle muss auf dem Gerät erlaubt sein; bei Family Link gelten zusätzlich die Freigaben des Elternkontos.
 
-## Die erste Version: 0.1.0
+## Neu in 0.2.0
+
+- Detailliertere Zimmer mit Parkett, Vorhängen, Bildern, Teppichen und warmem Licht; Lobby-Lounge, Gartenblumen und lebendigere Figuren mit Gepäck.
+- Die Reinigungskraft kehrt nach dem letzten Auftrag zum Wagen in der Lobby zurück und übernimmt neue Aufgaben sofort.
+- Manager-Zimmerservice nach Einstellung beider Helfer: Handtücher an der Wäscheecke abholen, Frühstück am Buffet holen und Wünsche im belegten Zimmer erfüllen. Lieferungen bringen extra Münzen, Helfer übernehmen sie nicht. Unerfüllte Wünsche verfallen ohne Strafe. Zum Wechseln der Ladung die andere Abholstation antippen.
+- Frühstücksbuffet in drei Stufen: +8 Münzen pro Gast und Stufe, zusätzlich zum freiwilligen Zimmerservice.
+- Vier Hotelziele mit einmaligen automatischen Münzbelohnungen und eigener Fortschrittsübersicht.
+- Private feste Preview-Signatur über ein GitHub Actions Secret und aufsteigende Versionsnummer; künftige Preview-APKs lassen sich mit erhaltenem Spielstand aktualisieren.
+
+## Spielumfang
 
 - Ein Hotel mit sechs Zimmern, zwei davon anfangs geöffnet.
 - Gäste kommen sichtbar an, warten am Empfang, beziehen ihre Zimmer und reisen wieder ab.
@@ -22,7 +31,7 @@ Der Download wird nach dem ersten erfolgreichen Build verfügbar. Unter [Release
 - Einführung, Aufgabenhinweise, Pause, Info und Zurücksetzen mit Bestätigung.
 - Lokaler Spielstand: automatisch alle acht aktiven Sekunden und beim Verlassen. Inaktive Zeit läuft nicht weiter; keine Offline-Strafe oder Login-Pflicht.
 
-Dies ist eine **erste spielbare Testversion** mit einem Hotel. Weitere Hotels, Pool, Frühstück und Sound sind noch nicht enthalten. Die Darstellung nutzt eine eigene, flache Draufsicht mit direkt im Spiel gezeichneten Figuren und Möbeln.
+Dies ist eine **erste spielbare Testversion** mit einem Hotel. Weitere Hotels, Pool und Sound sind noch nicht enthalten. Die Darstellung nutzt eine eigene, flache Draufsicht mit direkt im Spiel gezeichneten Figuren und Möbeln.
 
 ## Steuerung
 
@@ -45,7 +54,11 @@ Projekt öffnen, SDK 36 und JDK 17 einrichten, dann:
 
 Windows: `gradlew.bat`. Die Test-APK liegt unter `app/build/outputs/apk/debug/app-debug.apk`. Der Release-Build wird bewusst **nicht** mit einem Produktionsschlüssel signiert; für den Play Store in Android Studio einen eigenen Uploadschlüssel verwenden.
 
-Die CI-APK verwendet die normale Android-Debug-Signatur. Bei einem neuen GitHub-Runner kann sich diese ändern: Android verlangt dann eine Deinstallation vor der Neuinstallation, wobei der Spielstand verloren geht. Für regelmäßige Updates mit erhaltenem Fortschritt lokal in Android Studio mit demselben Schlüssel bauen. Ein privater Produktionsschlüssel gehört niemals ins Repository.
+Für Preview-APKs ab 0.2.0 einmalig das Repository-Actions-Secret `MEIHOTEL_SIGNING_JSON` hinterlegen (Settings → Secrets and variables → Actions). Inhalt: JSON mit `keystore` (Base64-kodiertes PKCS12), `password` und `alias`. Den privaten Schlüssel sicher aufbewahren, niemals committen oder als Release/Actions-Artefakt hochladen. Der Workflow bricht außerhalb von Pull Requests ohne Secret absichtlich ab, damit kein Update mit zufälliger Signatur veröffentlicht wird.
+
+Die CI nutzt dann bei jedem Preview-Build diesen festen privaten Schlüssel. APK herunterladen und öffnen → „Aktualisieren“; der Spielstand bleibt erhalten. Die App-ID bleibt `de.meiapps.meihotel`. Bei jeder Version `versionCode` erhöhen. Lokale Debug-Builds verwenden nur mit `MEIHOTEL_KEYSTORE_FILE`, `MEIHOTEL_KEYSTORE_PASSWORD` und `MEIHOTEL_KEY_ALIAS` dieselbe Identität; andernfalls nutzt Android Studio seinen lokalen Debugschlüssel. Für Produktionsversionen einen eigenen privaten Schlüssel verwenden.
+
+**Einmaliger Übergang von 0.1.0:** Die alte CI hat pro Runner einen neuen Schlüssel erzeugt und nicht gesichert. Ohne den ursprünglichen privaten Schlüssel kann Android eine solche Installation nicht auf den festen Preview-Schlüssel aktualisieren. In diesem Fall ist einmalig eine Neuinstallation nötig; dabei geht der alte lokale Spielstand verloren. Ab 0.2.0 ist das behoben. Der Speicherformat-Lader akzeptiert weiterhin alte 0.1-Spielstände; neue Felder erhalten Standardwerte.
 
 ## Aufbau und Qualität
 
