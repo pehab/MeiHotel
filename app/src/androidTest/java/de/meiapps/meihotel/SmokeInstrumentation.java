@@ -22,12 +22,13 @@ public final class SmokeInstrumentation extends Instrumentation {
                 GameStore upgradeStore=new GameStore(context);
                 if(upgradePhase.equals("seed")) {
                     HotelGame seed=new HotelGame();seed.coins=432;seed.served=17;seed.cleaned=8;
+                    seed.progress.amenities[0].level=2;seed.progress.contractTier[1]=3;seed.rooms[0].level=4;seed.progress.services=11;
                     seed.hasCleaner=true;seed.breakfastLevel=2;seed.claimedGoals=1;
                     check(upgradeStore.save(seed,true),"seed update save");
                 } else {
                     HotelGame kept=upgradeStore.load();
                     check(kept.coins==432&&kept.served==17&&kept.cleaned==8&&kept.hasCleaner
-                        &&kept.breakfastLevel==2&&kept.claimedGoals==1,"save retained after APK update");
+                        &&kept.breakfastLevel==2&&kept.claimedGoals==1&&kept.progress.amenities[0].level==2&&kept.rooms[0].level==4&&kept.progress.contractTier[1]==3&&kept.progress.services==11,"save retained after APK update");
                 }
                 result.putString("stream","PASS: APK update "+upgradePhase);finish(Activity.RESULT_OK,result);return;
             }
@@ -39,9 +40,15 @@ public final class SmokeInstrumentation extends Instrumentation {
             initial.rooms[0].state=HotelGame.State.OCCUPIED;initial.rooms[0].timer=9;
             initial.rooms[1].state=HotelGame.State.DIRTY;
             initial.rooms[3].state=HotelGame.State.ARRIVING;
+            initial.rooms[0].level=3;initial.progress.cartLevel=2;initial.cargo=1;initial.cargoCount=3;
+            initial.progress.amenities[1].level=2;initial.progress.amenities[1].pending=3;initial.progress.amenities[1].timer=12;
+            initial.progress.contractBase[0]=9;initial.progress.contractTier[0]=2;initial.progress.stars=2;initial.progress.services=7;
             initial.player.x=505;initial.player.y=595;
             check(store.save(initial,true),"atomic save");
             HotelGame restored=new GameStore(context).load();
+            check(restored.rooms[0].level==3&&restored.cargoCount==3&&restored.progress.cartLevel==2&&restored.progress.stars==2&&restored.progress.services==7,"expansion equipment restored");
+            check(restored.progress.amenities[1].level==2&&restored.progress.amenities[1].pending==3&&restored.progress.amenities[1].timer==12,"courtyard restored");
+            check(restored.progress.contractTier[0]==2&&restored.progress.contractBase[0]==9,"repeatable contracts restored");
             check(restored.breakfastLevel==2&&restored.claimedGoals==1,"new progression restored");
             check(restored.coins==471&&restored.served==17&&restored.cleaned==12,"economy restored");
             check(restored.hasCleaner&&restored.hasReception&&restored.speedLevel==2&&restored.roomLevel==3,"upgrades restored");
@@ -50,6 +57,11 @@ public final class SmokeInstrumentation extends Instrumentation {
             check(restored.rooms[3].state==HotelGame.State.OCCUPIED&&restored.guests.size()==2,"arriving guests recovered");
             check(restored.player.x==505&&restored.player.y==595,"player restored");
             org.json.JSONObject legacy=new org.json.JSONObject(context.getSharedPreferences("hotel",Context.MODE_PRIVATE).getString("save",""));
+            legacy.remove("expansion");legacy.remove("area");legacy.remove("cargoCount");
+            for(int i=0;i<6;i++)legacy.getJSONArray("rooms").getJSONObject(i).remove("level");
+            context.getSharedPreferences("hotel",Context.MODE_PRIVATE).edit().putString("save",legacy.toString()).commit();
+            HotelGame versionTwo=store.load();
+            check(versionTwo.coins==471&&versionTwo.breakfastLevel==2&&versionTwo.rooms[0].level==0&&versionTwo.progress.stars==1&&versionTwo.progress.amenityLevels()==0&&versionTwo.cargoCount==1,"0.2 save compatibility");
             legacy.remove("breakfast");legacy.remove("goals");
             context.getSharedPreferences("hotel",Context.MODE_PRIVATE).edit().putString("save",legacy.toString()).commit();
             HotelGame migrated=store.load();
@@ -77,12 +89,36 @@ public final class SmokeInstrumentation extends Instrumentation {
             runOnMainSync(()->{
                 view[0].game.coins=1000;
                 tap(view[0],1090,847); // Open shop, then exercise the new fifth row.
-                tap(view[0],870,620);
+                tap(view[0],870,650);
                 check(view[0].game.breakfastLevel==1&&view[0].game.coins==900,"breakfast shop row touch target");
                 tap(view[0],640,727);
-                tap(view[0],900,55); // Hotel goals and return.
+                tap(view[0],855,55); // Hotel goals and return.
                 tap(view[0],640,727);
+                tap(view[0],955,55);check(view[0].game.area==1,"courtyard navigation button");
+                tap(view[0],955,55);check(view[0].game.area==0,"return to hotel button");
+                view[0].game.coins=50000;
+                tap(view[0],1090,847);tap(view[0],720,236);tap(view[0],870,301);
+                check(view[0].game.rooms[0].level==1,"individual room purchase via touch");
+                tap(view[0],640,733);
+                view[0].game.rooms[2].state=HotelGame.State.READY;
+                tap(view[0],1090,847);tap(view[0],888,236);tap(view[0],870,310);
+                check(view[0].game.progress.amenities[0].level==1,"courtyard purchase via touch");
+                tap(view[0],640,733);tap(view[0],955,55);
+                check(view[0].game.area==1,"courtyard opens after purchase");
+                view[0].game.player.go(300,425,view[0].game);
+                check(!view[0].game.player.route.isEmpty(),"courtyard service is reachable");
             });
+            final String[] preview={null};
+            runOnMainSync(()->{
+                view[0].setRunning(false);
+                for(int i=0;i<4;i++){view[0].game.progress.amenities[i].level=i+1;view[0].game.progress.amenities[i].pending=2;}
+                view[0].game.player.x=640;view[0].game.player.y=465;view[0].game.player.route.clear();
+                android.graphics.Bitmap bitmap=android.graphics.Bitmap.createBitmap(view[0].getWidth(),view[0].getHeight(),android.graphics.Bitmap.Config.ARGB_8888);
+                view[0].draw(new android.graphics.Canvas(bitmap));
+                java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG,65,bytes);bitmap.recycle();
+                preview[0]=android.util.Base64.encodeToString(bytes.toByteArray(),android.util.Base64.NO_WRAP);
+            });
+            result.putString("preview",preview[0]);
             result.putString("stream","\nPASS: Android save/load, legacy migration, corrupt save recovery, Activity launch, touch start, shop and hotel goals.\n");
             finish(Activity.RESULT_OK,result);
         } catch(Throwable failure) {

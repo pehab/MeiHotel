@@ -31,7 +31,7 @@ jobs:
       - name: Build older-version update fixture with the same preview identity
         run: |
           cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/MeiHotel-current.apk"
-          ./gradlew --no-daemon assembleDebug -PmeihotelVersionCode=1
+          ./gradlew --no-daemon assembleDebug -PmeihotelVersionCode=2
           cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/MeiHotel-baseline.apk"
           cp "$RUNNER_TEMP/MeiHotel-current.apk" app/build/outputs/apk/debug/app-debug.apk
       - name: Lint-Details bei Fehlern

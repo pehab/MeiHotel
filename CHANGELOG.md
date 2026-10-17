@@ -1,5 +1,13 @@
 # Änderungen
 
+## 0.3.0 (3)
+- Begehbarer Hotelhof mit Café, Spielecke, Blumengarten und Pool, je fünf Stufen und eigenen Serviceaufgaben.
+- Je fünf individuelle Ausbaustufen für alle sechs Zimmer.
+- Teamtraining, Servicewagen mit bis vier Waren und Trinkgeldkasse.
+- Fünf Hotelsterne mit Ausbauanforderungen, drei wiederholbare Auftragsreihen und Meilensteine bis 2.500 Gäste.
+- Vorhandene Spielstände und Signatur bleiben kompatibel; Update ohne Neuinstallation.
+- Tests für Hofwege, laufenden Hotelbetrieb bei Bereichswechsel, Kaufgrenzen, Auftragsbelohnungen und Speicherkompatibilität.
+
 ## 0.2.0 (2)
 - Zimmerservice für aktive Manager: Handtücher und Frühstück gegen Münzen liefern, ohne Strafen für verpasste Wünsche.
 - Frühstücksbuffet in drei Ausbaustufen und vier einmalige Hotelziele.

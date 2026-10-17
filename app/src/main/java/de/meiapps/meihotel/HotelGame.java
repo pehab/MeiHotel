@@ -9,7 +9,7 @@ public final class HotelGame {
     public static final float WIDTH = 1280, HEIGHT = 900;
     public static final int MAX_COINS = 999_999;
     public enum State { LOCKED, READY, ARRIVING, OCCUPIED, DIRTY }
-    public enum Upgrade { RECEPTION, CLEANER, SPEED, ROOMS, BREAKFAST }
+    public enum Upgrade { RECEPTION, CLEANER, SPEED, ROOMS, BREAKFAST, RECEPTION_TRAINING, CLEANER_TRAINING, CART, TIPS }
     public static final class Point {
         public float x, y;
         public Point(float x, float y) { this.x = x; this.y = y; }
@@ -19,6 +19,7 @@ public final class HotelGame {
         public final float x, y;
         public State state;
         public float timer, work;
+        public int level;
         public int request; // 0: none, 1: towels, 2: breakfast
         Room(int id) {
             this.id = id; x = 320 + (id % 3) * 290; y = id < 3 ? 146 : 520;
@@ -37,7 +38,7 @@ public final class HotelGame {
         public boolean leaving;
         Actor(float x, float y, int color) { this.x=x; this.y=y; this.color=color; }
         public void go(float tx, float ty, HotelGame game) {
-            route.clear(); route.addAll(Navigation.path(game, x, y, tx, ty));
+            route.clear(); route.addAll(Navigation.path(game, x, y, tx, ty, this==game.player&&game.area==1));
         }
         public void move(float dt, float speed) {
             float remaining = dt * speed;
@@ -54,10 +55,12 @@ public final class HotelGame {
     public final Actor player = new Actor(245,450,0);
     public final Actor cleaner = new Actor(270,650,0);
     public final Actor receptionist = new Actor(105,400,0);
+    public final HotelProgress progress=new HotelProgress(this);
+    public int area, cargoCount;
     public final List<Actor> guests = new ArrayList<>();
     public int coins=60, served, cleaned, speedLevel, roomLevel, breakfastLevel, claimedGoals, cargo, deliveries;
-    public static final int[] GOAL_GUESTS={10,25,50,100};
-    public static final int[] GOAL_REWARDS={50,100,180,300};
+    public static final int[] GOAL_GUESTS={10,25,50,100,250,500,1000,2500};
+    public static final int[] GOAL_REWARDS={50,100,180,300,700,1500,3500,8000};
     public boolean hasReception, hasCleaner;
     public float receptionWork, spawnTimer=2, elapsed;
     public String message = "Willkommen! Geh zur Rezeption.";
@@ -68,13 +71,24 @@ public final class HotelGame {
     public HotelGame() { for (int i=0;i<rooms.length;i++) rooms[i]=new Room(i); }
     public int openRooms() { int n=0; for (Room r:rooms) if(r.state!=State.LOCKED) n++; return n; }
     public int waitingGuests() { int n=0; for(Actor a:guests) if(a.room<0&&!a.leaving)n++;return n; }
-    public int roomIncome() { return 25 + roomLevel*10 + breakfastLevel*8; }
+    public int roomIncome() { return 25 + roomLevel*10 + breakfastLevel*8+progress.incomeBonus(); }
+    public int roomIncome(Room room){return roomIncome()+room.level*6;}
+    public float receptionDuration(){return 1.3f/(1+progress.receptionTraining*.2f);}
+    public float cleaningDuration(){return 2.5f/(1+progress.cleanerTraining*.2f);}
+    public void switchArea(){
+        player.route.clear();area=1-area;player.x=area==0?245:640;player.y=area==0?450:465;
+        announce(area==0?"Zurück im Hotel":"Willkommen im Hotelhof! Bereiche unter Ausbauen freischalten.");
+    }
     public int cost(Upgrade u) {
         switch(u) {
             case RECEPTION: return hasReception ? -1 : 150;
             case CLEANER: return hasCleaner ? -1 : 180;
             case SPEED: return speedLevel>=3 ? -1 : 80 + speedLevel*100;
             case ROOMS: return roomLevel>=3 ? -1 : 120 + roomLevel*160;
+            case RECEPTION_TRAINING: return !hasReception||progress.receptionTraining>=4?-1:250*(progress.receptionTraining+1)*(progress.receptionTraining+1);
+            case CLEANER_TRAINING: return !hasCleaner||progress.cleanerTraining>=4?-1:250*(progress.cleanerTraining+1)*(progress.cleanerTraining+1);
+            case CART: return progress.cartLevel>=3?-1:300*(progress.cartLevel+1)*(progress.cartLevel+1);
+            case TIPS: return progress.tipLevel>=5?-1:220*(progress.tipLevel+1)*(progress.tipLevel+1);
             case BREAKFAST: return breakfastLevel>=3 ? -1 : 100 + breakfastLevel*150;
             default: throw new IllegalArgumentException();
         }
@@ -89,10 +103,14 @@ public final class HotelGame {
             case SPEED: speedLevel++; break;
             case ROOMS: roomLevel++; break;
             case BREAKFAST: breakfastLevel++; break;
+            case RECEPTION_TRAINING: progress.receptionTraining++;break;
+            case CLEANER_TRAINING: progress.cleanerTraining++;break;
+            case CART: progress.cartLevel++;break;
+            case TIPS: progress.tipLevel++;break;
         }
         announce("Verbesserung freigeschaltet!"); return true;
     }
-    public boolean near(float x,float y,float radius) { return Math.hypot(player.x-x,player.y-y)<radius; }
+    public boolean near(float x,float y,float radius) { return area==0&&Math.hypot(player.x-x,player.y-y)<radius; }
     public void announce(String text) { message=text;messageTime=4; }
     public void movePlayer(float dx,float dy,float dt) {
         if (dx==0&&dy==0)return;
@@ -101,8 +119,8 @@ public final class HotelGame {
         float distance=Math.min(dt,.05f)*(165+speedLevel*35)*Math.min(length,1);
         float nx=player.x+dx/length*distance, ny=player.y+dy/length*distance;
         // Axis separation allows sliding along walls instead of getting stuck.
-        if(Navigation.walkable(this,nx,player.y))player.x=nx;
-        if(Navigation.walkable(this,player.x,ny))player.y=ny;
+        if(Navigation.playerWalkable(this,nx,player.y))player.x=nx;
+        if(Navigation.playerWalkable(this,player.x,ny))player.y=ny;
     }
     public void tick(float seconds) {
         if(!Float.isFinite(seconds)||seconds<=0)return;
@@ -130,11 +148,11 @@ public final class HotelGame {
         boolean atDesk=hasReception||near(235,450,65);
         if(atDesk&&ready!=null&&first!=null&&Math.hypot(first.x-150,first.y-500)<12) {
             receptionWork+=dt;
-            if(receptionWork>=1.3f) {
+            if(receptionWork>=receptionDuration()) {
                 first.room=ready.id;ready.state=State.ARRIVING;
                 first.go(ready.x+185,ready.serviceY(),this);
-                coins=Math.min(MAX_COINS,coins+roomIncome());served++;receptionWork=0;
-                if(served==1)announce("Dein erster Gast! +"+roomIncome()+" Münzen");
+                coins=Math.min(MAX_COINS,coins+roomIncome(ready));served++;receptionWork=0;
+                if(served==1)announce("Dein erster Gast! +"+roomIncome(ready)+" Münzen");
             }
         } else receptionWork=0;
         for(Room r:rooms) {
@@ -161,19 +179,19 @@ public final class HotelGame {
                 boolean helper=hasCleaner&&cleanerRoom==r.id&&cleaner.route.isEmpty()&&Math.hypot(cleaner.x-(r.x+185),cleaner.y-r.serviceY())<3;
                 if(near(r.x+185,r.serviceY(),48)||helper) {
                     r.work+=dt;
-                    if(r.work>=2.5f){r.state=State.READY;r.work=0;cleaned++;if(cleaned==1)announce("Blitzblank! Das Zimmer ist wieder frei.");}
+                    if(r.work>=cleaningDuration()){r.state=State.READY;r.work=0;cleaned++;if(cleaned==1)announce("Blitzblank! Das Zimmer ist wieder frei.");}
                 } else r.work=0;
             }
         }
         // Optional manager work: helpers never collect or deliver guest wishes.
         if(hasCleaner&&hasReception) {
             if(cargo==0) {
-                if(near(245,570,30))cargo=1;
-                else if(breakfastLevel>0&&near(92,650,32))cargo=2;
+                if(near(245,570,30)){cargo=1;cargoCount=1+progress.cartLevel;}
+                else if(breakfastLevel>0&&near(92,650,32)){cargo=2;cargoCount=1+progress.cartLevel;}
             }
             for(Room r:rooms)if(r.state==State.OCCUPIED&&r.request!=0&&r.request==cargo&&near(r.x+185,r.serviceY(),42)) {
-                int tip=r.request==1?18:22+breakfastLevel*4;
-                cargo=0;r.request=0;deliveries++;coins=Math.min(MAX_COINS,coins+tip);
+                int tip=(r.request==1?18:22+breakfastLevel*4)+progress.tipLevel*3;
+                cargoCount=Math.max(0,cargoCount-1);if(cargoCount==0)cargo=0;r.request=0;deliveries++;coins=Math.min(MAX_COINS,coins+tip);
                 announce("Danke! Zimmerservice geliefert · +"+tip+" Münzen");break;
             }
         }
@@ -186,14 +204,19 @@ public final class HotelGame {
                 if(cleanerRoom<0&&(finishedTask||cleaner.route.isEmpty())&&Math.hypot(cleaner.x-270,cleaner.y-650)>2)
                     cleaner.go(270,650,this);
             }
-            cleaner.move(dt,140);
+            cleaner.move(dt,140+progress.cleanerTraining*25);
         }
+        progress.tick(dt);
         for(int i=0;i<GOAL_GUESTS.length;i++)if(served>=GOAL_GUESTS[i]&&(claimedGoals&(1<<i))==0) {
             claimedGoals|=1<<i;coins=Math.min(MAX_COINS,coins+GOAL_REWARDS[i]);
             announce("Hotelziel: "+GOAL_GUESTS[i]+" Gäste! +"+GOAL_REWARDS[i]+" Münzen");
         }
     }
     public String objective() {
+        if(area==1){
+            for(int i=0;i<4;i++)if(progress.amenities[i].pending>0)return HotelProgress.AREA_JOBS[i]+" · zum markierten Servicekreis laufen";
+            return "Im Hof bauen: Café, Spielecke, Blumengarten und Pool · unter Ausbauen";
+        }
         if(served==0)return "Geh zum Empfang · Gäste einchecken";
         if(cleaned==0)return "Nach dem Besuch: zum Besen im Zimmer laufen";
         if(openRooms()<3)return "Spare 100 Münzen · öffne Zimmer 3 am Baukreis";
@@ -204,6 +227,6 @@ public final class HotelGame {
         if(openRooms()<6)return "Dein Hotel wächst · schalte alle 6 Zimmer frei";
         if(breakfastLevel==0)return "Eröffne dein Frühstücksbuffet unter „Ausbauen“";
         if(roomLevel<3)return "Verschönere die Zimmer · mehr Münzen pro Gast";
-        return "Dein Traumhotel! Erfülle Gästewünsche für extra Münzen.";
+        return "Nächster Hotelstern: "+progress.starRequirement();
     }
 }
