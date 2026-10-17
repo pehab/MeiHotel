@@ -8,6 +8,7 @@ emulator_pid=$!
 trap 'kill "$emulator_pid" 2>/dev/null || true' EXIT
 adb wait-for-device
 timeout 180 bash -c 'until [ "$(adb shell getprop sys.boot_completed | tr -d "\r")" = "1" ]; do sleep 2; done'
+adb shell wm size 1280x900
 adb shell input keyevent 82
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk

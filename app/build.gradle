@@ -1,23 +1,23 @@
 plugins { id 'com.android.application' }
 android {
-    namespace 'de.meiapps.meihotel'
-    compileSdk 36
+    namespace = 'de.meiapps.meihotel'
+    compileSdk = 36
     defaultConfig {
-        applicationId 'de.meiapps.meihotel'
-        minSdk 26
-        targetSdk 36
-        versionCode 1
-        versionName '0.1.0'
-        testInstrumentationRunner 'de.meiapps.meihotel.SmokeInstrumentation'
+        applicationId = 'de.meiapps.meihotel'
+        minSdk = 26
+        targetSdk = 36
+        versionCode = 1
+        versionName = '0.1.0'
+        testInstrumentationRunner = 'de.meiapps.meihotel.SmokeInstrumentation'
     }
-    buildFeatures { buildConfig true }
+    buildFeatures { buildConfig = true }
     buildTypes {
-        release { minifyEnabled true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' }
+        release { minifyEnabled = true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' }
     }
-    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
-    lint { abortOnError true; warningsAsErrors true }
+    compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
+    lint { abortOnError = true; warningsAsErrors = true }
 }
 dependencies {
-    implementation 'androidx.activity:activity:1.11.0'
+    implementation 'androidx.activity:activity:1.13.0'
     testImplementation 'junit:junit:4.13.2'
 }

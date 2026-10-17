@@ -30,6 +30,8 @@ final class HotelView extends View {
     private enum Panel { NONE, WELCOME, PAUSE, SHOP, HELP }
     private Panel panel=Panel.WELCOME;
 
+    public HotelView(Context context) { this(context,new HotelGame(),new GameStore(context)); }
+
     HotelView(Context context,HotelGame game,GameStore store) {
         super(context);this.game=game;this.store=store;
         setFocusable(true);setContentDescription("MeiHotel. Ziehen zum Laufen oder Ziel antippen. Ausbauen und Pause über die Schaltflächen.");

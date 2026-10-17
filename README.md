@@ -26,7 +26,7 @@ Dies ist eine **erste spielbare Testversion** mit einem Hotel. Weitere Hotels, P
 
 ## Steuerung
 
-1. Auf „Los geht’s!“ tippen.
+1. Gerät am besten ins Querformat drehen und auf „Los geht’s!“ tippen.
 2. Finger über der Spielfläche ziehen oder ein Ziel antippen.
 3. Zum grünen Empfangskreis laufen und kurz stehenbleiben: Ein freies Zimmer und ein wartender Gast reichen zum Einchecken.
 4. Nach der Abreise in das betreffende Zimmer zum Besensymbol laufen. Der Kreis zeigt den Reinigungsfortschritt.
