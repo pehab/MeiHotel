@@ -32,6 +32,12 @@ public final class SmokeInstrumentation extends Instrumentation {
                 }
                 result.putString("stream","PASS: APK update "+upgradePhase);finish(Activity.RESULT_OK,result);return;
             }
+            android.graphics.drawable.Drawable icon=context.getPackageManager().getApplicationIcon(context.getPackageName());
+            check(icon instanceof android.graphics.drawable.AdaptiveIconDrawable,"adaptive MeiApps icon installed");
+            android.graphics.Bitmap iconBitmap=android.graphics.Bitmap.createBitmap(256,256,android.graphics.Bitmap.Config.ARGB_8888);
+            icon.setBounds(0,0,256,256);icon.draw(new android.graphics.Canvas(iconBitmap));
+            java.io.ByteArrayOutputStream iconBytes=new java.io.ByteArrayOutputStream();iconBitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,iconBytes);iconBitmap.recycle();
+            result.putString("iconPreview",android.util.Base64.encodeToString(iconBytes.toByteArray(),android.util.Base64.NO_WRAP));
             check(context.getSharedPreferences("hotel",Context.MODE_PRIVATE).edit().clear().commit(),"clear preferences");
             GameStore store=new GameStore(context);
             HotelGame initial=store.load();check(initial.coins==60,"new game");

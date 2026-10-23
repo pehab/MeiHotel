@@ -1,6 +1,7 @@
 # Änderungen
 
 ## 0.4.0 (4)
+- Neues MeiApps-Icon: gelber Hotelier mit Glocke auf Türkis, adaptive/runde Launcher-Varianten und monochromes Android-Theme-Icon.
 - Sichtbare bauliche Ausbaustufen im Hof: Café vom Wagen zur Terrasse, Spielecke vom Sandkasten zum Spielpark, Garten bis Pergola/Brunnen und Pool vom kleinen Becken bis zur Rutsche mit Wasserspiel.
 - Zimmerausstattung wächst mit den individuellen Stufen: Bettwäsche, Teppich, Sofa, TV und Suite-Details; Servicepunkte bleiben frei.
 - Einstellungen mit automatischer täglicher GitHub-Update-Prüfung und manueller Suche. Download nach Zustimmung, Prüfung von Hash/Version/Signatur und Übergabe an den Android-Installer.

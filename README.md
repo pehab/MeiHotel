@@ -12,6 +12,8 @@ Der Download wird nach dem ersten erfolgreichen Build verfügbar. Unter [Release
 
 ## Neu in 0.4.0
 
+- Neues MeiApps-Maskottchen-Icon mit Hotelier, Empfangsglocke und Hotel; adaptive/runde Android-Icons sowie ein monochromes Theme-Icon. Die 512-Pixel-Storegrafik liegt unter `docs/play-store/icon-512.png`.
+
 - **Sichtbare Ausbaustufen:** Pool erst klein, dann größer, mit Liegen, Rutsche und Wasserspiel. Café, Spielecke und Garten erhalten pro Stufe neue Bauteile. Individuelle Zimmerausbauten verändern Bettwäsche, Teppich, Sofa, TV und Suite-Einrichtung.
 - **Update-Prüfung in der GitHub-Testversion:** Pause → Einstellungen / Updates. Einmal täglich beim Start automatisch oder manuell suchen, neue APK nach Zustimmung herunterladen und über Android installieren. Prüfsumme, Paketname, Version und derselbe Signierschlüssel werden vor der Übergabe geprüft. Der Spielstand bleibt erhalten.
 - Android benötigt eventuell einmalig „Aus dieser Quelle zulassen“. Family Link kann zusätzlich eine Elternfreigabe verlangen. Eine vollständig stille Installation ohne Android-Bestätigung ist für diese APK-Verteilung nicht vorgesehen.
