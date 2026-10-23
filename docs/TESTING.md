@@ -48,3 +48,13 @@ Physische Geräteprüfungen sind manuelle Freigabeschritte und werden nicht durc
 - Android prüft zusätzliche Speicherfelder, 0.2- und 0.1-Migration, APK-Update von Fixture-Code 2 auf 3, vier Shop-Tabs, individuellen Zimmer-/Hofkauf und Hin-/Rückweg zum Hof.
 - Die Update-Fixture benutzt aktuellen Code mit niedrigerem Versionscode. Alte Speicherformate werden separat durch Entfernen der später hinzugefügten optionalen Felder geprüft.
 - CI zeichnet eine Hofansicht für visuelle Kontrolle; nur synthetische Testdaten.
+
+
+## 0.4.0 Regressionen
+
+- 30 Simulations-/Update-Metadatenfälle: Versionsvergleich, feste HTTPS-Quelle, ungültige Größen/Hashes und veränderte oder gekürzte Downloads.
+- Android prüft APK-Identität/Signatur am echten installierten Paket, Ablehnung einer falschen Versionsangabe, FileProvider-Übergabe und Einstellungs-Schalter für automatische Updates.
+- Visuelle Kontrolle aller 20 Hof-Ausbaustufen sowie aller sechs Zimmerzustände (Basis bis Suite) anhand synthetischer Android-Renderings.
+- Update-Fixture Code 3 → 4 erhält weiterhin sämtliche Spielstände. APK und Versionsmetadaten werden vor dem Fixture-Build gesichert und danach gemeinsam wiederhergestellt.
+- Der Veröffentlichungs-Workflow lädt zuerst eine APK unter einem versionierten Release-Tag hoch. Anschließend aktualisiert er das Preview-Release samt Manifest. URL, SHA-256, Größe und Version gehören so zur selben APK.
+- Auf einem realen Gerät: Update-Prüfung, Download, Ablehnen/Freigeben der Installationsquelle, Zurückkehren von Android-Einstellungen, Installation und Wiederaufnahme des Spielstands testen. Family-Link-Regeln können Installation begrenzen.
