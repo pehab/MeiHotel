@@ -2,13 +2,21 @@
 
 Ein freundliches Hotelspiel für Android: selbst durchs Hotel laufen, Gäste begrüßen, Zimmer reinigen und mit erspielten Münzen ein kleines Traumhotel aufbauen.
 
-**Offline. Ohne Werbung, In-App-Käufe, sexualisierte Inhalte, Konten oder Tracking.** Eigene Grafik und Spielwelt; keine Grafiken, Namen oder Inhalte aus My Perfect Hotel übernommen.
+**Offline spielbar. Ohne Werbung, In-App-Käufe, sexualisierte Inhalte, Konten oder Tracking.** Die GitHub-Testversion kann optional nach Updates suchen; siehe Datenschutz. Eigene Grafik und Spielwelt; keine Grafiken, Namen oder Inhalte aus My Perfect Hotel übernommen.
 
 ## Testversion herunterladen
 
 👉 **[MeiHotel.apk herunterladen](https://github.com/pehab/MeiHotel/releases/download/preview/MeiHotel.apk)**
 
 Der Download wird nach dem ersten erfolgreichen Build verfügbar. Unter [Releases](https://github.com/pehab/MeiHotel/releases/tag/preview) liegt die aktuelle Testversion als normale APK-Datei – auch ohne Download eines Actions-ZIP. Android 8.0 oder neuer. Installation aus dieser Quelle muss auf dem Gerät erlaubt sein; bei Family Link gelten zusätzlich die Freigaben des Elternkontos.
+
+## Neu in 0.4.0
+
+- **Sichtbare Ausbaustufen:** Pool erst klein, dann größer, mit Liegen, Rutsche und Wasserspiel. Café, Spielecke und Garten erhalten pro Stufe neue Bauteile. Individuelle Zimmerausbauten verändern Bettwäsche, Teppich, Sofa, TV und Suite-Einrichtung.
+- **Update-Prüfung in der GitHub-Testversion:** Pause → Einstellungen / Updates. Einmal täglich beim Start automatisch oder manuell suchen, neue APK nach Zustimmung herunterladen und über Android installieren. Prüfsumme, Paketname, Version und derselbe Signierschlüssel werden vor der Übergabe geprüft. Der Spielstand bleibt erhalten.
+- Android benötigt eventuell einmalig „Aus dieser Quelle zulassen“. Family Link kann zusätzlich eine Elternfreigabe verlangen. Eine vollständig stille Installation ohne Android-Bestätigung ist für diese APK-Verteilung nicht vorgesehen.
+- Die automatische Prüfung lässt sich ausschalten; das Hotelspiel bleibt offline spielbar. Die Store-/Release-Version nutzt keine GitHub-Netzwerkfunktion und erhält ihre Updates über den Store.
+- **Einmaliger Einstieg:** 0.3.0 besitzt noch keinen Update-Prüfer. Diese APK einmal manuell über 0.3.0 installieren; danach kann das Spiel selbst nach zukünftigen Versionen suchen.
 
 ## Neu in 0.3.0
 
@@ -74,6 +82,8 @@ Die CI nutzt dann bei jedem Preview-Build diesen festen privaten Schlüssel. APK
 ## Aufbau und Qualität
 
 - `HotelGame.java`: Android-unabhängige Simulation und Wirtschaft.
+- `HotelArt.java`: baulich unterschiedliche Originalgrafik für Zimmer und Hofausbauten.
+- `UpdateInfo.java` und `src/debug/.../UpdateController.java`: validierte Update-Metadaten und GitHub-APK-Updates; Release verwendet einen inaktiven Adapter.
 - `HotelProgress.java`: individuelle Zimmer, Hofbereiche, Team, Hotelsterne und wiederholbare Aufträge.
 - `Navigation.java`: begehbare Bereiche, Türen, Bettkollisionen und Wegeplanung.
 - `HotelView.java`: Originalgrafik, Touch-Steuerung und Menüs.

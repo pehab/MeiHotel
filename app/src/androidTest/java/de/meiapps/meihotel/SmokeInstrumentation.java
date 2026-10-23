@@ -69,6 +69,18 @@ public final class SmokeInstrumentation extends Instrumentation {
             context.getSharedPreferences("hotel",Context.MODE_PRIVATE).edit().putString("save","invalid json").commit();
             GameStore damaged=new GameStore(context);HotelGame recovered=damaged.load();
             check(damaged.recovered&&recovered.coins==60,"corrupt save recovery");
+            context.getSharedPreferences("updates",Context.MODE_PRIVATE).edit().putBoolean("automatic",false).commit();
+            java.io.File installedApk=new java.io.File(context.getApplicationInfo().sourceDir);
+            UpdateInfo self=new UpdateInfo(BuildConfig.VERSION_CODE,BuildConfig.VERSION_NAME,"https://github.com/pehab/MeiHotel/releases/download/v0.4.0-preview-4/MeiHotel.apk",UpdateInfo.digest(installedApk),installedApk.length());
+            UpdateController.verifyArchive(context,installedApk,self);
+            boolean rejected=false;
+            try{UpdateController.verifyArchive(context,installedApk,new UpdateInfo(BuildConfig.VERSION_CODE+1,BuildConfig.VERSION_NAME,self.url,self.sha256,self.size));}catch(java.io.IOException expected){rejected=true;}
+            check(rejected,"wrong APK version rejected before installer");
+            java.io.File directory=new java.io.File(context.getCacheDir(),"updates");check(directory.isDirectory()||directory.mkdirs(),"update cache directory");
+            java.io.File cache=new java.io.File(directory,"fixture.apk");try(java.io.FileOutputStream out=new java.io.FileOutputStream(cache)){out.write(1);}
+            Intent installer=UpdateController.installIntent(context,cache);
+            check(installer.getData()!=null&&"content".equals(installer.getData().getScheme())&&(installer.getFlags()&Intent.FLAG_GRANT_READ_URI_PERMISSION)!=0,"private FileProvider installer handoff");
+            check(cache.delete(),"delete fixture cache");
             store.save(new HotelGame(),true);
             Activity activity=startActivitySync(new Intent(context,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             waitForIdleSync();SystemClock.sleep(800);
@@ -87,6 +99,10 @@ public final class SmokeInstrumentation extends Instrumentation {
             SystemClock.sleep(1400);
             runOnMainSync(()->check(view[0].game.elapsed>0,"welcome button starts simulation"));
             runOnMainSync(()->{
+                tap(view[0],1180,55);tap(view[0],640,466);tap(view[0],640,415);
+                check(context.getSharedPreferences("updates",Context.MODE_PRIVATE).getBoolean("automatic",false),"enable automatic updates in settings");
+                tap(view[0],640,415);check(!context.getSharedPreferences("updates",Context.MODE_PRIVATE).getBoolean("automatic",true),"disable automatic updates in settings");
+                tap(view[0],640,727);tap(view[0],640,300);
                 view[0].game.coins=1000;
                 tap(view[0],1090,847); // Open shop, then exercise the new fifth row.
                 tap(view[0],870,650);
@@ -119,6 +135,22 @@ public final class SmokeInstrumentation extends Instrumentation {
                 preview[0]=android.util.Base64.encodeToString(bytes.toByteArray(),android.util.Base64.NO_WRAP);
             });
             result.putString("preview",preview[0]);
+            runOnMainSync(()->{
+                android.graphics.Bitmap bitmap=android.graphics.Bitmap.createBitmap(2200,820,android.graphics.Bitmap.Config.ARGB_8888);
+                android.graphics.Canvas canvas=new android.graphics.Canvas(bitmap);canvas.drawColor(0xfff5efdc);
+                android.graphics.Paint text=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);text.setTextSize(18);text.setColor(0xff244c43);
+                HotelArt art=new HotelArt();
+                for(int type=0;type<4;type++)for(int level=1;level<=5;level++){
+                    canvas.save();canvas.translate((level-1)*440,type*205);canvas.drawText(HotelProgress.AREA_NAMES[type]+" · Stufe "+level,12,24,text);art.amenity(canvas,type,level,0,0);canvas.restore();
+                }
+                java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG,75,bytes);bitmap.recycle();
+                result.putString("artPreview",android.util.Base64.encodeToString(bytes.toByteArray(),android.util.Base64.NO_WRAP));
+                for(int i=0;i<6;i++){view[0].game.rooms[i].state=HotelGame.State.READY;view[0].game.rooms[i].level=i;}
+                view[0].game.area=0;view[0].game.player.x=245;view[0].game.player.y=450;
+                android.graphics.Bitmap rooms=android.graphics.Bitmap.createBitmap(view[0].getWidth(),view[0].getHeight(),android.graphics.Bitmap.Config.ARGB_8888);
+                view[0].draw(new android.graphics.Canvas(rooms));bytes.reset();rooms.compress(android.graphics.Bitmap.CompressFormat.JPEG,75,bytes);rooms.recycle();
+                result.putString("roomPreview",android.util.Base64.encodeToString(bytes.toByteArray(),android.util.Base64.NO_WRAP));
+            });
             result.putString("stream","\nPASS: Android save/load, legacy migration, corrupt save recovery, Activity launch, touch start, shop and hotel goals.\n");
             finish(Activity.RESULT_OK,result);
         } catch(Throwable failure) {

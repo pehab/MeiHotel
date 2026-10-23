@@ -31,9 +31,11 @@ jobs:
       - name: Build older-version update fixture with the same preview identity
         run: |
           cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/MeiHotel-current.apk"
-          ./gradlew --no-daemon assembleDebug -PmeihotelVersionCode=2
+          cp app/build/outputs/apk/debug/output-metadata.json "$RUNNER_TEMP/MeiHotel-current-metadata.json"
+          ./gradlew --no-daemon assembleDebug -PmeihotelVersionCode=3
           cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/MeiHotel-baseline.apk"
           cp "$RUNNER_TEMP/MeiHotel-current.apk" app/build/outputs/apk/debug/app-debug.apk
+          cp "$RUNNER_TEMP/MeiHotel-current-metadata.json" app/build/outputs/apk/debug/output-metadata.json
       - name: Lint-Details bei Fehlern
         if: failure()
         run: cat app/build/reports/lint-results-debug.txt 2>/dev/null || true
@@ -48,7 +50,9 @@ jobs:
       - uses: actions/upload-artifact@v6
         with:
           name: MeiHotel-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/outputs/apk/debug/output-metadata.json
           if-no-files-found: error
   publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -57,6 +61,7 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v6
       - uses: actions/download-artifact@v7
         with:
           name: MeiHotel-APK
@@ -64,10 +69,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: |
-          mv app-debug.apk MeiHotel.apk
-          if gh release view preview >/dev/null 2>&1; then
-            gh release upload preview MeiHotel.apk --clobber
-          else
-            gh release create preview MeiHotel.apk --target "${{ github.sha }}" --prerelease --title "MeiHotel – aktuelle Testversion" --notes "Werbefreie Offline-Testversion. APK unter Assets herunterladen. Benötigt Android 8 oder neuer."
-          fi
+        run: python3 .github/scripts/publish-preview.py

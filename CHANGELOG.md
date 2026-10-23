@@ -1,5 +1,12 @@
 # Änderungen
 
+## 0.4.0 (4)
+- Sichtbare bauliche Ausbaustufen im Hof: Café vom Wagen zur Terrasse, Spielecke vom Sandkasten zum Spielpark, Garten bis Pergola/Brunnen und Pool vom kleinen Becken bis zur Rutsche mit Wasserspiel.
+- Zimmerausstattung wächst mit den individuellen Stufen: Bettwäsche, Teppich, Sofa, TV und Suite-Details; Servicepunkte bleiben frei.
+- Einstellungen mit automatischer täglicher GitHub-Update-Prüfung und manueller Suche. Download nach Zustimmung, Prüfung von Hash/Version/Signatur und Übergabe an den Android-Installer.
+- Feste versionierte APKs und öffentliche Update-Metadaten. Store-Build bleibt ohne Netzwerk- und Installationsberechtigungen.
+- Vorhandene Zurücksetzen-Funktion bleibt unverändert.
+
 ## 0.3.0 (3)
 - Begehbarer Hotelhof mit Café, Spielecke, Blumengarten und Pool, je fünf Stufen und eigenen Serviceaufgaben.
 - Je fünf individuelle Ausbaustufen für alle sechs Zimmer.

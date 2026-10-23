@@ -21,6 +21,7 @@ final class HotelView extends View {
     private final GameStore store;
     private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF rect=new RectF();
+    private final HotelArt art=new HotelArt();
     private final LinearGradient gardenLight=new LinearGradient(0,95,1280,810,0xffe4efd7,0xffb9d1ba,Shader.TileMode.CLAMP);
     private final LinearGradient glassLight=new LinearGradient(0,0,0,30,0xff8ec9cf,0xffd8f0e8,Shader.TileMode.CLAMP);
     private final List<HotelGame.Actor> drawingActors=new ArrayList<>();
@@ -31,9 +32,11 @@ final class HotelView extends View {
     private int pointer=-1,safeLeft,safeTop,safeRight,safeBottom;
     private boolean dragging,running,focused=true;
     private long lastFrame;
-    private enum Panel { NONE, WELCOME, PAUSE, SHOP, HELP, GOALS }
+    private enum Panel { NONE, WELCOME, PAUSE, SHOP, HELP, GOALS, SETTINGS }
     private Panel panel=Panel.WELCOME;
     private int shopPage,goalPage;
+    private UpdateController updates;
+    void setUpdates(UpdateController value){updates=value;}
 
     public HotelView(Context context) { this(context,new HotelGame(),new GameStore(context)); }
 
@@ -148,25 +151,7 @@ final class HotelView extends View {
                 label(c,"Antippen und unter Hof freischalten",x+220,y+105,18,INK,false);
                 label(c,game.progress.amenityRequirement(i).isEmpty()?game.progress.amenityCost(i)+" M":game.progress.amenityRequirement(i),x+220,y+144,21,GREEN,true);
             }else {
-                if(i==0) {
-                    box(c,x+27,y+62,166,89,10,0xffa57d57);box(c,x+23,y+55,174,32,6,0xffe7b96a);
-                    box(c,x+50,y+34,58,34,5,INK);circle(c,x+79,y+49,10,GOLD);
-                    for(int n=0;n<a.level;n++){float tx=x+238+(n%3)*60,ty=y+80+(n/3)*65;circle(c,tx,ty,22,0xffc8a47a);circle(c,tx,ty,13,CREAM);circle(c,tx,ty,7,0xff865c3f);}
-                }else if(i==1) {
-                    box(c,x+40,y+62,115,95,10,0xff8cb8ab);box(c,x+61,y+40,72,35,8,GOLD);
-                    line(c,x+118,y+75,x+198,y+153,0xffd8977a,22);
-                    for(int n=0;n<a.level+2;n++)box(c,x+235+(n%4)*35,y+82+(n/4)*40,29,29,5,guestColors[n%5]);
-                }else if(i==2) {
-                    for(int row=0;row<a.level;row++)for(int col=0;col<7;col++) {
-                        float fx=x+48+col*55,fy=y+65+row*24;
-                        box(c,fx-15,fy+8,30,10,3,0xffaa855f);line(c,fx,fy,fx,fy+9,GREEN,3);
-                        circle(c,fx,fy,8,guestColors[(row+col)%5]);circle(c,fx,fy,3,GOLD);
-                    }
-                }else {
-                    box(c,x+29,y+45,376,129,19,0xffb4d3cb);box(c,x+39,y+55,356,109,16,0xff6cb4c6);
-                    for(int n=0;n<6;n++)line(c,x+62+n*53,y+95,x+86+n*53,y+95,0x66ffffff,4);
-                    for(int n=0;n<a.level;n++){circle(c,x+80+n*62,y+124,13,guestColors[n%5]);circle(c,x+80+n*62,y+124,7,0xff6cb4c6);}
-                }
+                art.amenity(c,i,a.level,x,y);
                 for(int n=0;n<a.pending;n++) {
                     float gx=a.x+100+n*31,gy=a.y;
                     oval(c,gx-10,gy+1,gx+10,gy+9,0x33243731);box(c,gx-8,gy-18,16,22,5,guestColors[(i+n)%5]);circle(c,gx,gy-25,8,0xffedc19b);
@@ -297,11 +282,8 @@ final class HotelView extends View {
         if(game.roomLevel>0){box(c,r.x+184,r.y+62,21,22,4,GOLD);label(c,"★",r.x+194,r.y+79,17,INK,true);}
         if(game.roomLevel>1){box(c,r.x+179,r.y+113,53,35,7,0xffe4cda3);circle(c,r.x+205,r.y+129,9,accent);}
         if(game.roomLevel>2){label(c,"★★★",r.centerX(),r.y+61,18,0xffaa7b28,true);}
-        if(r.level>=1)line(c,r.x+30,r.y+172,r.x+108,r.y+172,GOLD,4);
-        if(r.level>=2){box(c,r.x+166,r.y+151,74,35,10,0xffdcb98e);line(c,r.x+175,r.y+166,r.x+231,r.y+166,CREAM,2);}
-        if(r.level>=3){box(c,r.x+171,r.y+47,34,39,4,0xffae855a);for(int n=0;n<4;n++)box(c,r.x+175+n*7,r.y+53,5,24,1,guestColors[n]);}
-        if(r.level>=4){ring(c,r.x+147,r.y+100,13,GOLD,3);box(c,r.x+7,r.y+7,256,4,2,GOLD);}
-        if(r.level>=5){box(c,r.x+100,r.y+46,70,23,6,GOLD);label(c,"SUITE",r.centerX(),r.y+63,14,INK,true);}
+        art.room(c,r);
+        if(r.level>=5)label(c,"SUITE",r.centerX(),r.y+63,14,INK,true);
         String state;
         switch(r.state){
             case OCCUPIED: state="ZU GAST";break;
@@ -350,13 +332,24 @@ final class HotelView extends View {
         box(c,280,115,720,670,27,CREAM);
         if(panel==Panel.GOALS){drawGoals(c);return;}
         if(panel==Panel.SHOP){drawShop(c);return;}
+        if(panel==Panel.SETTINGS) {
+            label(c,"Einstellungen",640,184,34,INK,true);
+            label(c,"MeiHotel "+BuildConfig.VERSION_NAME,640,232,22,MUTED,false);
+            button(c,340,280,600,70,updates==null?"Updates über Google Play":"Nach Updates suchen",updates==null?MUTED:GREEN,true);
+            button(c,340,380,600,70,updates==null?"Automatische Updates über Google Play":"Automatische Update-Prüfung: "+(updates.automatic()?"AN":"AUS"),updates==null?MUTED:INK,true);
+            label(c,updates==null?"Store-Versionen erhalten Updates über Google Play.":"Neue Versionen werden beim Start einmal täglich geprüft.",640,505,19,INK,false);
+            label(c,"Den Download und die Installation bestätigst du selbst.",640,542,19,MUTED,false);
+            label(c,"Das Spiel funktioniert auch ohne Internet.",640,598,19,GREEN,true);
+            button(c,340,697,600,61,"Zurück zur Pause",INK,true);return;
+        }
         String title=panel==Panel.WELCOME?"Willkommen im MeiHotel!":panel==Panel.PAUSE?"Eine kleine Pause":"So spielst du";
         label(c,title,640,184,34,INK,true);
         if(panel==Panel.PAUSE) {
-            label(c,"Dein Hotel wartet auf dich.",640,240,23,MUTED,false);
-            button(c,350,290,580,73,"Weiterspielen",GREEN,true);
-            button(c,350,388,580,73,"So funktioniert’s",INK,true);
-            button(c,350,486,580,73,"Über MeiHotel",INK,true);
+            label(c,"Dein Hotel wartet auf dich.",640,230,23,MUTED,false);
+            button(c,350,267,580,65,"Weiterspielen",GREEN,true);
+            button(c,350,350,580,65,"So funktioniert’s",INK,true);
+            button(c,350,433,580,65,"Einstellungen / Updates",INK,true);
+            button(c,350,516,580,65,"Über MeiHotel",INK,true);
             button(c,350,628,580,66,"Spielstand zurücksetzen",0xffb27c63,true);
             label(c,"Fortschritt wird automatisch gespeichert.",640,746,18,MUTED,false);return;
         }
@@ -410,10 +403,19 @@ final class HotelView extends View {
         if(panel==Panel.WELCOME||panel==Panel.HELP) {
             if(inside(x,y,340,697,600,61))panel=Panel.NONE;return;
         }
+        if(panel==Panel.SETTINGS) {
+            if(inside(x,y,340,697,600,61)){panel=Panel.PAUSE;return;}
+            if(updates!=null&&inside(x,y,340,280,600,70))updates.check(true);
+            else if(updates!=null&&inside(x,y,340,380,600,70))updates.toggle();
+            return;
+        }
         if(panel==Panel.PAUSE) {
-            if(inside(x,y,350,290,580,73))panel=Panel.NONE;
-            else if(inside(x,y,350,388,580,73))panel=Panel.HELP;
-            else if(inside(x,y,350,486,580,73))new AlertDialog.Builder(getContext()).setTitle("MeiHotel "+BuildConfig.VERSION_NAME).setMessage("Ein Hotelspiel von Peter.\n\nEigene Grafik und Spielwelt.\nKeine Werbung, Käufe, Konten oder Datenerfassung.\nDer Spielstand bleibt auf diesem Gerät.\n\nZimmerausbau, Hotelhof, Teamtraining, Aufträge und fünf Hotelsterne.").setPositiveButton("Zurück",null).show();
+            if(inside(x,y,350,267,580,65))panel=Panel.NONE;
+            else if(inside(x,y,350,350,580,65))panel=Panel.HELP;
+            else if(inside(x,y,350,433,580,65))panel=Panel.SETTINGS;
+            else if(inside(x,y,350,516,580,65))new AlertDialog.Builder(getContext()).setTitle("MeiHotel "+BuildConfig.VERSION_NAME)
+                .setMessage("Ein Hotelspiel von Peter.\n\nEigene Grafik und Spielwelt.\nKeine Werbung, Käufe oder Konten. Dein Hotel bleibt auf diesem Gerät.\n\nIn der GitHub-Testversion lässt sich die automatische Update-Prüfung in den Einstellungen abschalten. Dafür wird GitHub kontaktiert; der Spielstand wird nicht übertragen.")
+                .setPositiveButton("Zurück",null).show();
             else if(inside(x,y,350,628,580,66))confirmReset();
             return;
         }
