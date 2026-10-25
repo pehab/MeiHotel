@@ -17,7 +17,7 @@ Der Download wird nach dem ersten erfolgreichen Build verfügbar. Unter [Release
 - **Sichtbare Ausbaustufen:** Pool erst klein, dann größer, mit Liegen, Rutsche und Wasserspiel. Café, Spielecke und Garten erhalten pro Stufe neue Bauteile. Individuelle Zimmerausbauten verändern Bettwäsche, Teppich, Sofa, TV und Suite-Einrichtung.
 - **Update-Prüfung in der GitHub-Testversion:** Pause → Einstellungen / Updates. Einmal täglich beim Start automatisch oder manuell suchen, neue APK nach Zustimmung herunterladen und über Android installieren. Prüfsumme, Paketname, Version und derselbe Signierschlüssel werden vor der Übergabe geprüft. Der Spielstand bleibt erhalten.
 - Android benötigt eventuell einmalig „Aus dieser Quelle zulassen“. Family Link kann zusätzlich eine Elternfreigabe verlangen. Eine vollständig stille Installation ohne Android-Bestätigung ist für diese APK-Verteilung nicht vorgesehen.
-- Die automatische Prüfung lässt sich ausschalten; das Hotelspiel bleibt offline spielbar. Die Store-/Release-Version nutzt keine GitHub-Netzwerkfunktion und erhält ihre Updates über den Store.
+- Die automatische Prüfung lässt sich ausschalten; das Hotelspiel bleibt offline spielbar. Die tatsächliche Installationsquelle bestimmt den Updateweg: Google Play bei Play-Installationen, GitHub bei direkt installierten APKs.
 - **Einmaliger Einstieg:** 0.3.0 besitzt noch keinen Update-Prüfer. Diese APK einmal manuell über 0.3.0 installieren; danach kann das Spiel selbst nach zukünftigen Versionen suchen.
 
 ## Neu in 0.3.0
@@ -85,7 +85,7 @@ Die CI nutzt dann bei jedem Preview-Build diesen festen privaten Schlüssel. APK
 
 - `HotelGame.java`: Android-unabhängige Simulation und Wirtschaft.
 - `HotelArt.java`: baulich unterschiedliche Originalgrafik für Zimmer und Hofausbauten.
-- `UpdateInfo.java` und `src/debug/.../UpdateController.java`: validierte Update-Metadaten und GitHub-APK-Updates; Release verwendet einen inaktiven Adapter.
+- `UpdateController.java` und `de.meiapps.updates`: Quellenerkennung und verifizierte GitHub-APK-Updates; Play-Installationen verwenden Google Play.
 - `HotelProgress.java`: individuelle Zimmer, Hofbereiche, Team, Hotelsterne und wiederholbare Aufträge.
 - `Navigation.java`: begehbare Bereiche, Türen, Bettkollisionen und Wegeplanung.
 - `HotelView.java`: Originalgrafik, Touch-Steuerung und Menüs.
@@ -93,6 +93,10 @@ Die CI nutzt dann bei jedem Preview-Build diesen festen privaten Schlüssel. APK
 - `MainActivity.java`: Android-Lebenszyklus und sichere Bildschirmränder.
 - `HotelGameTest.java`: Gästezyklus, Baukosten, Helfer, Kollisionen, alle Türen, Upgradegrenzen und Pausenzeiten.
 
-CI führt Unit-Tests, strenges Android-Lint sowie Debug- und Release-Build aus. Erst nach erfolgreichem Build erscheint die APK im Preview-Release. AndroidX Activity übernimmt die Android-Zurück-Geste; keine Werbe- oder Analyse-SDKs und keine Netzwerkberechtigung.
+CI führt Unit-Tests, strenges Android-Lint sowie Debug- und Release-Build aus. Erst nach erfolgreichem Build erscheint die APK im Preview-Release. AndroidX Activity übernimmt die Android-Zurück-Geste; keine Werbe- oder Analyse-SDKs. Netzwerkzugriff erfolgt für die abschaltbare GitHub-Updateprüfung nur bei direkt installierten APKs.
 
 Siehe [Datenschutz](PRIVACY.md) und [Testcheckliste](docs/TESTING.md).
+
+## Updatequelle
+
+Updates folgen der tatsächlichen Installationsquelle: Google Play für Play-Installationen, GitHub für direkt installierte APKs. [Bedienung, Signierung und Veröffentlichung](docs/UPDATES.md).

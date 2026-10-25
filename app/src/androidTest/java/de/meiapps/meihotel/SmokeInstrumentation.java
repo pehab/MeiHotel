@@ -83,9 +83,11 @@ public final class SmokeInstrumentation extends Instrumentation {
             try{UpdateController.verifyArchive(context,installedApk,new UpdateInfo(BuildConfig.VERSION_CODE+1,BuildConfig.VERSION_NAME,self.url,self.sha256,self.size));}catch(java.io.IOException expected){rejected=true;}
             check(rejected,"wrong APK version rejected before installer");
             java.io.File directory=new java.io.File(context.getCacheDir(),"updates");check(directory.isDirectory()||directory.mkdirs(),"update cache directory");
-            java.io.File cache=new java.io.File(directory,"fixture.apk");try(java.io.FileOutputStream out=new java.io.FileOutputStream(cache)){out.write(1);}
+            java.io.File cache=new java.io.File(context.getCacheDir(),"github-update.apk");try(java.io.FileOutputStream out=new java.io.FileOutputStream(cache)){out.write(1);}
             Intent installer=UpdateController.installIntent(context,cache);
             check(installer.getData()!=null&&"content".equals(installer.getData().getScheme())&&(installer.getFlags()&Intent.FLAG_GRANT_READ_URI_PERMISSION)!=0,"private FileProvider installer handoff");
+            try(android.os.ParcelFileDescriptor fd=context.getContentResolver().openFileDescriptor(installer.getData(),"r")){check(fd!=null&&fd.getStatSize()==1,"installer URI exposes exact cached APK bytes");}
+            boolean readOnly=false;try{context.getContentResolver().openFileDescriptor(installer.getData(),"w");}catch(java.io.FileNotFoundException expected){readOnly=true;}check(readOnly,"installer URI is read only");
             check(cache.delete(),"delete fixture cache");
             store.save(new HotelGame(),true);
             Activity activity=startActivitySync(new Intent(context,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));

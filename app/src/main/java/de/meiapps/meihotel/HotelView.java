@@ -335,9 +335,9 @@ final class HotelView extends View {
         if(panel==Panel.SETTINGS) {
             label(c,"Einstellungen",640,184,34,INK,true);
             label(c,"MeiHotel "+BuildConfig.VERSION_NAME,640,232,22,MUTED,false);
-            button(c,340,280,600,70,updates==null?"Updates über Google Play":"Nach Updates suchen",updates==null?MUTED:GREEN,true);
-            button(c,340,380,600,70,updates==null?"Automatische Updates über Google Play":"Automatische Update-Prüfung: "+(updates.automatic()?"AN":"AUS"),updates==null?MUTED:INK,true);
-            label(c,updates==null?"Store-Versionen erhalten Updates über Google Play.":"Neue Versionen werden beim Start einmal täglich geprüft.",640,505,19,INK,false);
+            button(c,340,280,600,70,(updates==null||updates.fromPlay())?"Updates über Google Play":"Nach Updates suchen",(updates==null||updates.fromPlay())?MUTED:GREEN,true);
+            button(c,340,380,600,70,(updates==null||updates.fromPlay())?"Automatische Updates über Google Play":"Automatische Update-Prüfung: "+(updates.automatic()?"AN":"AUS"),(updates==null||updates.fromPlay())?MUTED:INK,true);
+            label(c,(updates==null||updates.fromPlay())?"Store-Versionen erhalten Updates über Google Play.":"Neue Versionen werden beim Start einmal täglich geprüft.",640,505,19,INK,false);
             label(c,"Den Download und die Installation bestätigst du selbst.",640,542,19,MUTED,false);
             label(c,"Das Spiel funktioniert auch ohne Internet.",640,598,19,GREEN,true);
             button(c,340,697,600,61,"Zurück zur Pause",INK,true);return;
