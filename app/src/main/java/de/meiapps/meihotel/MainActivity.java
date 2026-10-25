@@ -19,7 +19,7 @@ public final class MainActivity extends ComponentActivity {
         store=new GameStore(this);
         hotel=new HotelView(this,store.load(),store);
         setContentView(hotel);
-        if(BuildConfig.GITHUB_UPDATES){updates=new UpdateController(this);hotel.setUpdates(updates);}
+        updates=new UpdateController(this,()->store.save(hotel.game,true));hotel.setUpdates(updates);
         if(android.os.Build.VERSION.SDK_INT>=30) {
             WindowCompat.setDecorFitsSystemWindows(getWindow(),false);
             WindowInsetsController controller=getWindow().getInsetsController();

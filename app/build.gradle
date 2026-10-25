@@ -6,8 +6,8 @@ android {
         applicationId = 'de.meiapps.meihotel'
         minSdk = 26
         targetSdk = 36
-        versionCode = providers.gradleProperty('meihotelVersionCode').getOrElse('4').toInteger()
-        versionName = '0.4.0'
+        versionCode = providers.gradleProperty('meihotelVersionCode').getOrElse('5').toInteger()
+        versionName = '0.4.1'
         testInstrumentationRunner = 'de.meiapps.meihotel.SmokeInstrumentation'
     }
     buildFeatures { buildConfig = true }

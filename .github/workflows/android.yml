@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
@@ -19,6 +19,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Verify update routing and APK metadata contract
+        run: bash scripts/test-update-contract.sh
       - uses: gradle/actions/setup-gradle@v5
       - name: Restore private preview signing identity
         env:
@@ -57,14 +59,17 @@ jobs:
   publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
+      actions: read
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v7
-        with:
-          name: MeiHotel-APK
+      - name: Download tested APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh run download "$GITHUB_RUN_ID" --name MeiHotel-APK
       - name: Installierbare Test-APK veröffentlichen
         env:
           GH_TOKEN: ${{ github.token }}
